@@ -760,9 +760,9 @@
         const el = document.getElementById(divId);
         el.removeAllListeners?.('plotly_click');
         el.on('plotly_click', function(eventData) {
-          const pt  = eventData.points[0];
-          const idx = pt.customdata;
-          if (idx == null || idx >= 50) return;
+          if (!eventData?.points?.length) return;
+          const idx = eventData.points[0].curveNumber; // 0–49 = members, 50 = mean
+          if (idx >= 50) return;
           if (!S.activeMembers.includes(idx)) return;  // ignore dim lines
           S.focusedMember = S.focusedMember === idx ? null : idx;
           updateMemberBar();
