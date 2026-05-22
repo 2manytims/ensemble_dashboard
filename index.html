@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EC Ensemble Dashboard – MetraWeather</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0a1628;
+      --bg2:         #0d1f3c;
+      --bg3:         #111e35;
+      --bg4:         #142240;
+      --accent:      #00aeef;
+      --hot:         #FF6B35;
+      --cold:        #4FC3F7;
+      --focus:       #FFD700;
+      --dim:         #1e3a5f;
+      --text:        #e8edf5;
+      --text2:       #8899aa;
+      --border:      #1a2f4a;
+      --font:        'Inter', 'Segoe UI', system-ui, sans-serif;
+      --radius:      8px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 13px;
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-brand { display: flex; flex-direction: column; gap: 2px; }
+    .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+    .brand-sub  { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; }
+    .header-title { font-size: 17px; font-weight: 600; color: #fff; }
+    .run-badge {
+      background: var(--bg4);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--text2);
+    }
+    .run-badge span { color: var(--accent); font-weight: 600; }
+
+    /* ── Station Tabs ────────────────────────────────────────────────── */
+    .station-nav {
+      display: flex;
+      gap: 4px;
+      padding: 10px 24px 0;
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+    }
+    .tab-btn {
+      padding: 7px 20px;
+      border: none;
+      background: transparent;
+      color: var(--text2);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: color .15s, border-color .15s;
+      border-radius: 6px 6px 0 0;
+    }
+    .tab-btn:hover { color: var(--text); background: var(--bg4); }
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+      background: var(--bg3);
+    }
+
+    /* ── Analysis Panel ─────────────────────────────────────────────── */
+    .analysis-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 14px 24px;
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+    }
+    .analysis-title {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text2);
+    }
+    .analysis-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .ctrl-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
+    select {
+      background: var(--bg4);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 5px 8px;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    select:focus { outline: none; border-color: var(--accent); }
+    .btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 5px;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-hot  { background: var(--hot);   color: #fff; }
+    .btn-cold { background: var(--cold);  color: #0a1628; }
+    .btn-clear { background: var(--bg4); color: var(--text2); border: 1px solid var(--border); }
+    .ctrl-sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+
+    .member-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-height: 24px;
+    }
+    .member-bar-label { font-size: 11px; color: var(--text2); }
+    .member-chip {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .chip-hot  { background: rgba(255,107,53,0.2); color: var(--hot);  border: 1px solid rgba(255,107,53,0.4); }
+    .chip-cold { background: rgba(79,195,247,0.2); color: var(--cold); border: 1px solid rgba(79,195,247,0.4); }
+    .member-bar.empty .member-bar-label { color: var(--text2); font-style: italic; }
+    .hint {
+      font-size: 11px;
+      color: var(--text2);
+      margin-left: auto;
+      font-style: italic;
+    }
+
+    /* ── Charts Grid ─────────────────────────────────────────────────── */
+    .charts-outer {
+      padding: 16px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .charts-row.full { grid-template-columns: 1fr; }
+
+    .chart-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .chart-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .chart-card-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .chart-unit { font-size: 11px; color: var(--text2); }
+    .chart-legend {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      color: var(--text2);
+    }
+    .legend-line {
+      width: 18px;
+      height: 2px;
+      border-radius: 1px;
+    }
+    .legend-band {
+      width: 12px;
+      height: 10px;
+      border-radius: 2px;
+    }
+    .chart-div { width: 100%; }
+
+    /* ── Footer ──────────────────────────────────────────────────────── */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 24px;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    /* ── Loading / Error ─────────────────────────────────────────────── */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 300px;
+      color: var(--text2);
+      font-size: 14px;
+    }
+    .error-box {
+      margin: 40px auto;
+      max-width: 600px;
+      background: rgba(255,107,53,0.1);
+      border: 1px solid rgba(255,107,53,0.4);
+      border-radius: var(--radius);
+      padding: 24px;
+      color: var(--text);
+    }
+    .error-box h3 { color: var(--hot); margin-bottom: 12px; }
+    .error-box code { background: var(--bg4); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
+
+    @media (max-width: 700px) {
+      .charts-row { grid-template-columns: 1fr; }
+      .header-title { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-brand">
+      <span class="brand-name">MetraWeather</span>
+      <span class="brand-sub">Australian Consult Team</span>
+    </div>
+    <span class="header-title">EC Ensemble Dashboard</span>
+    <div class="run-badge">Run: <span id="run-label">…</span></div>
+  </header>
+
+  <!-- Station Tabs -->
+  <nav class="station-nav" id="station-nav"></nav>
+
+  <!-- Analysis Panel -->
+  <div class="analysis-panel">
+    <div class="analysis-title">Tail Scenario Analysis</div>
+    <div class="analysis-controls">
+      <span class="ctrl-label">Rank by</span>
+      <select id="rank-var">
+        <option value="tmax">Max Temperature</option>
+        <option value="ff100">100m Wind Speed</option>
+        <option value="swrad6">Solar Radiation</option>
+        <option value="tcld">Cloud Cover</option>
+        <option value="td">Dew Point</option>
+      </select>
+      <span class="ctrl-label">at</span>
+      <select id="time-select" style="min-width:180px"></select>
+      <div class="ctrl-sep"></div>
+      <button class="btn btn-hot"   id="btn-top"    onclick="highlightTail('top')">▲ Hottest / Highest 10</button>
+      <button class="btn btn-cold"  id="btn-bottom" onclick="highlightTail('bottom')">▼ Coldest / Lowest 10</button>
+      <button class="btn btn-clear" onclick="clearHighlight()">✕ Clear</button>
+      <span class="hint" id="hint-text">Click a highlighted member line to focus it</span>
+    </div>
+    <div class="member-bar empty" id="member-bar">
+      <span class="member-bar-label">Select a variable and time step above, then highlight the extreme members across all charts.</span>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-outer" id="charts-outer">
+    <div class="loading" id="loading-msg">Loading ensemble data…</div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <span>MetraWeather Pty Ltd · Australian Consult Team</span>
+    <span id="footer-run">–</span>
+  </footer>
+
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+  <script>
+  // ═══════════════════════════════════════════════════════════════════
+  //  Configuration
+  // ═══════════════════════════════════════════════════════════════════
+
+  const VARS = {
+    tmax:   { label: 'Max Temperature', unit: '°C',   color: '#e06c75' },
+    ff100:  { label: '100m Wind Speed', unit: 'm/s',  color: '#61afef' },
+    swrad6: { label: 'Solar Radiation', unit: 'W/m²', color: '#e5c07b' },
+    tcld:   { label: 'Cloud Cover',     unit: '%',    color: '#98c379' },
+    td:     { label: 'Dew Point',       unit: '°C',   color: '#56b6c2' },
+  };
+
+  const CHART_ORDER = ['tmax', 'ff100', 'swrad6', 'tcld', 'td'];
+
+  const HOT_COLOR   = '#FF6B35';
+  const COLD_COLOR  = '#4FC3F7';
+  const FOCUS_COLOR = '#FFD700';
+  const DIM_COLOR   = '#1e3554';
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Application State
+  // ═══════════════════════════════════════════════════════════════════
+
+  const S = {
+    data:            null,
+    station:         null,
+    selectedMembers: [],   // array of member indices 0–49
+    highlightDir:    'top',
+    focusedMember:   null,
+    isSyncing:       false,
+  };
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Bootstrap
+  // ═══════════════════════════════════════════════════════════════════
+
+  async function init() {
+    try {
+      const res = await fetch('data/ensemble_data.json');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      S.data = await res.json();
+    } catch (err) {
+      showError(err);
+      return;
+    }
+
+    const meta  = S.data.meta;
+    const stns  = Object.keys(S.data.stations);
+    S.station   = stns[0];
+
+    document.getElementById('run-label').textContent   = meta.run_label;
+    document.getElementById('footer-run').textContent  = 'Run: ' + meta.run_label;
+
+    // Station tabs
+    const nav = document.getElementById('station-nav');
+    stns.forEach((stn, i) => {
+      const btn = document.createElement('button');
+      btn.className  = 'tab-btn' + (i === 0 ? ' active' : '');
+      btn.textContent = stn;
+      btn.onclick    = () => setStation(stn);
+      nav.appendChild(btn);
+    });
+
+    // Controls
+    document.getElementById('rank-var').onchange = () => {
+      populateTimeSelect();
+      if (S.selectedMembers.length) highlightTail(S.highlightDir);
+    };
+
+    // Build chart layout
+    buildChartLayout();
+    populateTimeSelect();
+    renderAll();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Layout builder  (called once)
+  // ═══════════════════════════════════════════════════════════════════
+
+  function buildChartLayout() {
+    const outer = document.getElementById('charts-outer');
+    outer.innerHTML = '';
+
+    // Row 1: tmax + ff100
+    // Row 2: swrad6 + tcld
+    // Row 3: td (full width, shorter)
+    const rows = [
+      ['tmax', 'ff100'],
+      ['swrad6', 'tcld'],
+      ['td'],
+    ];
+
+    rows.forEach(row => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'charts-row' + (row.length === 1 ? ' full' : '');
+
+      row.forEach(varKey => {
+        const cfg    = VARS[varKey];
+        const card   = document.createElement('div');
+        card.className = 'chart-card';
+
+        card.innerHTML = `
+          <div class="chart-card-header">
+            <span class="chart-card-title" style="color:${cfg.color}">
+              ${cfg.label}
+            </span>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div class="chart-legend" id="legend-${varKey}">
+                <div class="legend-item">
+                  <div class="legend-band" style="background:${hexAlpha(cfg.color,0.18)}"></div>
+                  <span>10–90th</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-band" style="background:${hexAlpha(cfg.color,0.40)}"></div>
+                  <span>25–75th</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-line" style="background:${cfg.color}"></div>
+                  <span>Median</span>
+                </div>
+                <div class="legend-item">
+                  <div class="legend-line" style="background:#fff;opacity:0.6;border-top:2px dashed #fff"></div>
+                  <span>Mean</span>
+                </div>
+              </div>
+              <span class="chart-unit">${cfg.unit}</span>
+            </div>
+          </div>
+          <div id="chart-${varKey}" class="chart-div"></div>
+        `;
+
+        rowEl.appendChild(card);
+      });
+
+      outer.appendChild(rowEl);
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Station switching
+  // ═══════════════════════════════════════════════════════════════════
+
+  function setStation(name) {
+    S.station        = name;
+    S.selectedMembers = [];
+    S.focusedMember  = null;
+
+    document.querySelectorAll('.tab-btn').forEach(b =>
+      b.classList.toggle('active', b.textContent === name));
+
+    populateTimeSelect();
+    updateMemberBar();
+    renderAll();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Time select population
+  // ═══════════════════════════════════════════════════════════════════
+
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function formatTimeLabel(isoStr, firstIsoStr) {
+    const dt    = new Date(isoStr);
+    const first = new Date(firstIsoStr);
+    const dayN  = Math.round((dt - first) / 86400000);
+    const hh    = String(dt.getUTCHours()).padStart(2, '0');
+    return `D+${dayN}  ${dt.getUTCDate()} ${MONTHS[dt.getUTCMonth()]}  ${hh}Z`;
+  }
+
+  function populateTimeSelect() {
+    const varKey    = document.getElementById('rank-var').value;
+    const sel       = document.getElementById('time-select');
+    const varData   = S.data.stations[S.station]?.[varKey];
+    const prevIdx   = sel.selectedIndex;
+
+    sel.innerHTML = '';
+    if (!varData) return;
+
+    const { times } = varData;
+    times.forEach((t, i) => {
+      const opt       = document.createElement('option');
+      opt.value       = i;
+      opt.textContent = formatTimeLabel(t, times[0]);
+      sel.appendChild(opt);
+    });
+
+    // Default: roughly D+5 midday
+    const defaultIdx = Math.min(prevIdx >= 0 ? prevIdx : 30, times.length - 1);
+    sel.selectedIndex = defaultIdx;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Tail highlighting
+  // ═══════════════════════════════════════════════════════════════════
+
+  function highlightTail(direction) {
+    const varKey   = document.getElementById('rank-var').value;
+    const timeIdx  = parseInt(document.getElementById('time-select').value);
+    const varData  = S.data.stations[S.station]?.[varKey];
+    if (!varData) return;
+
+    const ranked = varData.members
+      .map((series, i) => ({ i, v: series[timeIdx] ?? 0 }))
+      .sort((a, b) => a.v - b.v);
+
+    S.highlightDir    = direction;
+    S.focusedMember   = null;
+    S.selectedMembers = direction === 'top'
+      ? ranked.slice(-10).map(r => r.i)
+      : ranked.slice(0, 10).map(r => r.i);
+
+    updateMemberBar();
+    renderAll();
+  }
+
+  function clearHighlight() {
+    S.selectedMembers = [];
+    S.focusedMember   = null;
+    updateMemberBar();
+    renderAll();
+  }
+
+  function updateMemberBar() {
+    const bar = document.getElementById('member-bar');
+    if (!S.selectedMembers.length) {
+      bar.className = 'member-bar empty';
+      bar.innerHTML = '<span class="member-bar-label">Select a variable and time step above, then highlight the extreme members across all charts.</span>';
+      document.getElementById('hint-text').style.display = 'none';
+      return;
+    }
+
+    const chipClass = S.highlightDir === 'top' ? 'chip-hot' : 'chip-cold';
+    const dirLabel  = S.highlightDir === 'top'    ? 'Highest 10' : 'Lowest 10';
+    const varLabel  = VARS[document.getElementById('rank-var').value]?.label || '';
+    const sorted    = [...S.selectedMembers].sort((a, b) => a - b);
+
+    bar.className = 'member-bar';
+    bar.innerHTML = `
+      <span class="member-bar-label">${dirLabel} by ${varLabel}: </span>
+      ${sorted.map(i => `<span class="member-chip ${chipClass}">M${i+1}</span>`).join('')}
+    `;
+
+    document.getElementById('hint-text').style.display = '';
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Percentile helpers
+  // ═══════════════════════════════════════════════════════════════════
+
+  function pct(sorted, p) {
+    const n   = sorted.length;
+    const idx = (p / 100) * (n - 1);
+    const lo  = Math.floor(idx);
+    const hi  = Math.ceil(idx);
+    return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  }
+
+  function buildPercentileSeries(members) {
+    const n     = members[0].length;
+    const p10   = [], p25 = [], p50 = [], p75 = [], p90 = [];
+    for (let t = 0; t < n; t++) {
+      const vals = members.map(m => m[t]).sort((a, b) => a - b);
+      p10.push(pct(vals, 10));
+      p25.push(pct(vals, 25));
+      p50.push(pct(vals, 50));
+      p75.push(pct(vals, 75));
+      p90.push(pct(vals, 90));
+    }
+    return { p10, p25, p50, p75, p90 };
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Trace builders
+  // ═══════════════════════════════════════════════════════════════════
+
+  function buildDefaultTraces(varData, cfg) {
+    const { times, members, mean } = varData;
+    const { p10, p25, p50, p75, p90 } = buildPercentileSeries(members);
+    const rev = a => [...a].reverse();
+
+    return [
+      // 10–90 band
+      {
+        x: [...times, ...rev(times)],
+        y: [...p90, ...rev(p10)],
+        fill: 'toself', fillcolor: hexAlpha(cfg.color, 0.12),
+        line: { width: 0 }, showlegend: false, hoverinfo: 'skip', type: 'scatter',
+      },
+      // 25–75 band
+      {
+        x: [...times, ...rev(times)],
+        y: [...p75, ...rev(p25)],
+        fill: 'toself', fillcolor: hexAlpha(cfg.color, 0.35),
+        line: { width: 0 }, showlegend: false, hoverinfo: 'skip', type: 'scatter',
+      },
+      // Median
+      {
+        x: times, y: p50, mode: 'lines', type: 'scatter',
+        line: { color: cfg.color, width: 2 },
+        hovertemplate: '%{y:.1f}<extra>Median</extra>', showlegend: false,
+      },
+      // Mean
+      {
+        x: times, y: mean, mode: 'lines', type: 'scatter',
+        line: { color: 'rgba(255,255,255,0.55)', width: 1.5, dash: 'dot' },
+        hovertemplate: '%{y:.1f}<extra>Mean</extra>', showlegend: false,
+      },
+    ];
+  }
+
+  function buildMemberTraces(varData, cfg, varKey) {
+    const { times, members, mean } = varData;
+    const traces = [];
+    const isHot  = S.highlightDir === 'top';
+
+    for (let i = 0; i < 50; i++) {
+      const isSel     = S.selectedMembers.includes(i);
+      const isFocus   = S.focusedMember === i;
+
+      let color, width, opacity, hoverinfo;
+      if (isFocus) {
+        color = FOCUS_COLOR; width = 3.5; opacity = 1; hoverinfo = undefined;
+      } else if (isSel) {
+        color = isHot ? HOT_COLOR : COLD_COLOR; width = 2; opacity = 1; hoverinfo = undefined;
+      } else {
+        color = DIM_COLOR; width = 0.7; opacity = 0.6; hoverinfo = 'skip';
+      }
+
+      traces.push({
+        x: times, y: members[i],
+        mode: 'lines', type: 'scatter',
+        name: `M${i+1}`,
+        line: { color, width },
+        opacity,
+        showlegend: false,
+        hovertemplate: (isSel || isFocus) ? `%{y:.1f}<extra>M${i+1}</extra>` : undefined,
+        hoverinfo,
+        // store member index for click handling
+        customdata: new Array(times.length).fill(i),
+      });
+    }
+
+    // Mean on top
+    traces.push({
+      x: times, y: mean, mode: 'lines', type: 'scatter',
+      line: { color: 'rgba(255,255,255,0.7)', width: 2, dash: 'dash' },
+      hovertemplate: '%{y:.1f}<extra>Mean</extra>', showlegend: false,
+    });
+
+    return traces;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Layout builder
+  // ═══════════════════════════════════════════════════════════════════
+
+  function makePlotLayout(varKey, isTall) {
+    return {
+      paper_bgcolor: 'rgba(0,0,0,0)',
+      plot_bgcolor:  '#0b1d38',
+      margin: { t: 6, b: 40, l: 52, r: 12 },
+      height: isTall ? 260 : 200,
+      xaxis: {
+        type: 'date',
+        color: '#44607a',
+        gridcolor: '#122038',
+        tickfont: { size: 10, color: '#55708a' },
+        tickformat: '%d %b',
+        tickangle: 0,
+        linecolor: '#1a2f4a',
+      },
+      yaxis: {
+        color: '#44607a',
+        gridcolor: '#122038',
+        tickfont: { size: 10, color: '#55708a' },
+        zeroline: false,
+        linecolor: '#1a2f4a',
+      },
+      hovermode: 'x unified',
+      hoverlabel: {
+        bgcolor: '#162944',
+        bordercolor: '#2a4a70',
+        font: { color: '#e8edf5', size: 11 },
+        namelength: 10,
+      },
+      dragmode: 'pan',
+    };
+  }
+
+  const PLOTLY_CFG = { responsive: true, displayModeBar: false, scrollZoom: true };
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Render
+  // ═══════════════════════════════════════════════════════════════════
+
+  function renderAll() {
+    const stationData = S.data.stations[S.station];
+    const isHL        = S.selectedMembers.length > 0;
+
+    CHART_ORDER.forEach(varKey => {
+      const divId  = `chart-${varKey}`;
+      const varData = stationData?.[varKey];
+      const cfg     = VARS[varKey];
+      const isTall  = varKey !== 'td';
+
+      if (!varData?.times?.length) {
+        Plotly.react(divId, [], makePlotLayout(varKey, isTall), PLOTLY_CFG);
+        return;
+      }
+
+      const traces = isHL
+        ? buildMemberTraces(varData, cfg, varKey)
+        : buildDefaultTraces(varData, cfg);
+
+      const layout = makePlotLayout(varKey, isTall);
+      Plotly.react(divId, traces, layout, PLOTLY_CFG);
+
+      // Axis sync on pan/zoom
+      attachAxisSync(divId);
+
+      // Member click handler
+      if (isHL) {
+        const el = document.getElementById(divId);
+        el.removeAllListeners?.('plotly_click');
+        el.on('plotly_click', function(eventData) {
+          const pt  = eventData.points[0];
+          const idx = pt.customdata;
+          if (idx == null || idx >= 50) return;
+          S.focusedMember = S.focusedMember === idx ? null : idx;
+          renderAll();
+        });
+      }
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Axis sync (pan/zoom one chart → all charts follow)
+  // ═══════════════════════════════════════════════════════════════════
+
+  function attachAxisSync(divId) {
+    const el = document.getElementById(divId);
+    el.removeAllListeners?.('plotly_relayout');
+    el.on('plotly_relayout', function(ed) {
+      if (S.isSyncing) return;
+      const r0 = ed['xaxis.range[0]'], r1 = ed['xaxis.range[1]'];
+      const auto = ed['xaxis.autorange'];
+      if (!r0 && !auto) return;
+
+      S.isSyncing = true;
+      CHART_ORDER.forEach(vk => {
+        const otherId = `chart-${vk}`;
+        if (otherId === divId) return;
+        Plotly.relayout(otherId, auto
+          ? { 'xaxis.autorange': true }
+          : { 'xaxis.range': [r0, r1] }
+        );
+      });
+      setTimeout(() => { S.isSyncing = false; }, 50);
+    });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Utilities
+  // ═══════════════════════════════════════════════════════════════════
+
+  function hexAlpha(hex, a) {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    return `rgba(${r},${g},${b},${a})`;
+  }
+
+  function showError(err) {
+    document.getElementById('charts-outer').innerHTML = `
+      <div class="error-box">
+        <h3>Could not load ensemble data</h3>
+        <p style="margin-bottom:12px">${err}</p>
+        <p>Make sure you have run <code>python wrangle.py &lt;csv_folder&gt;</code>
+           and that <code>data/ensemble_data.json</code> exists next to this HTML file.</p>
+        <p style="margin-top:12px">To view locally, run a simple server:<br>
+           <code>python -m http.server 8000</code><br>
+           then open <code>http://localhost:8000</code> in your browser.</p>
+      </div>`;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Boot
+  // ═══════════════════════════════════════════════════════════════════
+  document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
