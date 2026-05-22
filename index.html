@@ -145,9 +145,16 @@
       border-radius: 12px;
       font-size: 11px;
       font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity .15s, box-shadow .15s;
     }
+    .member-chip:hover { opacity: 0.75; }
     .chip-hot  { background: rgba(255,107,53,0.2); color: var(--hot);  border: 1px solid rgba(255,107,53,0.4); }
     .chip-cold { background: rgba(79,195,247,0.2); color: var(--cold); border: 1px solid rgba(79,195,247,0.4); }
+    .chip-inactive { opacity: 0.28; text-decoration: line-through; }
+    .chip-inactive:hover { opacity: 0.5; }
+    .chip-focused { box-shadow: 0 0 0 2px var(--focus); }
     .member-bar.empty .member-bar-label { color: var(--text2); font-style: italic; }
     .hint {
       font-size: 11px;
@@ -330,7 +337,8 @@
   const S = {
     data:            null,
     station:         null,
-    selectedMembers: [],   // array of member indices 0–49
+    selectedMembers: [],   // all 10 members from tail selection
+    activeMembers:   [],   // subset currently toggled on via chips
     highlightDir:    'top',
     focusedMember:   null,
     isSyncing:       false,
@@ -449,6 +457,7 @@
   function setStation(name) {
     S.station        = name;
     S.selectedMembers = [];
+    S.activeMembers  = [];
     S.focusedMember  = null;
 
     document.querySelectorAll('.tab-btn').forEach(b =>
@@ -514,6 +523,7 @@
     S.selectedMembers = direction === 'top'
       ? ranked.slice(-10).map(r => r.i)
       : ranked.slice(0, 10).map(r => r.i);
+    S.activeMembers   = [...S.selectedMembers];
 
     updateMemberBar();
     renderAll();
@@ -521,6 +531,7 @@
 
   function clearHighlight() {
     S.selectedMembers = [];
+    S.activeMembers   = [];
     S.focusedMember   = null;
     updateMemberBar();
     renderAll();
@@ -536,17 +547,38 @@
     }
 
     const chipClass = S.highlightDir === 'top' ? 'chip-hot' : 'chip-cold';
-    const dirLabel  = S.highlightDir === 'top'    ? 'Highest 10' : 'Lowest 10';
+    const dirLabel  = S.highlightDir === 'top' ? 'Highest 10' : 'Lowest 10';
     const varLabel  = VARS[document.getElementById('rank-var').value]?.label || '';
     const sorted    = [...S.selectedMembers].sort((a, b) => a - b);
 
     bar.className = 'member-bar';
-    bar.innerHTML = `
-      <span class="member-bar-label">${dirLabel} by ${varLabel}: </span>
-      ${sorted.map(i => `<span class="member-chip ${chipClass}">M${i+1}</span>`).join('')}
-    `;
+    bar.innerHTML =
+      `<span class="member-bar-label">${dirLabel} by ${varLabel}:</span>` +
+      sorted.map(i => {
+        const isActive  = S.activeMembers.includes(i);
+        const isFocused = S.focusedMember === i;
+        let cls = `member-chip ${chipClass}`;
+        if (!isActive)  cls += ' chip-inactive';
+        if (isFocused)  cls += ' chip-focused';
+        return `<span class="${cls}" onclick="toggleChip(${i})" title="${isActive ? 'Click to hide' : 'Click to show'}">M${i+1}</span>`;
+      }).join('') +
+      `<span class="member-bar-label" style="margin-left:6px;font-style:italic">
+         · click chips to toggle · click highlighted lines to focus
+       </span>`;
 
-    document.getElementById('hint-text').style.display = '';
+    document.getElementById('hint-text').style.display = 'none';
+  }
+
+  function toggleChip(memberIdx) {
+    const pos = S.activeMembers.indexOf(memberIdx);
+    if (pos === -1) {
+      S.activeMembers.push(memberIdx);
+    } else {
+      S.activeMembers.splice(pos, 1);
+      if (S.focusedMember === memberIdx) S.focusedMember = null;
+    }
+    updateMemberBar();
+    renderAll();
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -620,16 +652,16 @@
     const isHot  = S.highlightDir === 'top';
 
     for (let i = 0; i < 50; i++) {
-      const isSel     = S.selectedMembers.includes(i);
-      const isFocus   = S.focusedMember === i;
+      const isActive  = S.activeMembers.includes(i);
+      const isFocus   = S.focusedMember === i && isActive;
 
       let color, width, opacity, hoverinfo;
       if (isFocus) {
         color = FOCUS_COLOR; width = 3.5; opacity = 1; hoverinfo = undefined;
-      } else if (isSel) {
+      } else if (isActive) {
         color = isHot ? HOT_COLOR : COLD_COLOR; width = 2; opacity = 1; hoverinfo = undefined;
       } else {
-        color = DIM_COLOR; width = 0.7; opacity = 0.6; hoverinfo = 'skip';
+        color = DIM_COLOR; width = 0.7; opacity = 0.5; hoverinfo = 'skip';
       }
 
       traces.push({
@@ -639,9 +671,8 @@
         line: { color, width },
         opacity,
         showlegend: false,
-        hovertemplate: (isSel || isFocus) ? `%{y:.1f}<extra>M${i+1}</extra>` : undefined,
+        hovertemplate: isActive ? `%{y:.1f}<extra>M${i+1}</extra>` : undefined,
         hoverinfo,
-        // store member index for click handling
         customdata: new Array(times.length).fill(i),
       });
     }
@@ -724,7 +755,7 @@
       // Axis sync on pan/zoom
       attachAxisSync(divId);
 
-      // Member click handler
+      // Member click handler — only active (highlighted) lines respond
       if (isHL) {
         const el = document.getElementById(divId);
         el.removeAllListeners?.('plotly_click');
@@ -732,7 +763,9 @@
           const pt  = eventData.points[0];
           const idx = pt.customdata;
           if (idx == null || idx >= 50) return;
+          if (!S.activeMembers.includes(idx)) return;  // ignore dim lines
           S.focusedMember = S.focusedMember === idx ? null : idx;
+          updateMemberBar();
           renderAll();
         });
       }
