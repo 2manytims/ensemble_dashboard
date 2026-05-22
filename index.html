@@ -752,8 +752,9 @@
       const layout = makePlotLayout(varKey, isTall);
       Plotly.react(divId, traces, layout, PLOTLY_CFG);
 
-      // Axis sync on pan/zoom
+      // Axis sync on pan/zoom + crosshair sync on hover
       attachAxisSync(divId);
+      attachCrosshair(divId);
 
       // Member click handler — only active (highlighted) lines respond
       if (isHL) {
@@ -799,8 +800,38 @@
   }
 
   // ═══════════════════════════════════════════════════════════════════
-  //  Utilities
+  //  Crosshair sync (hover on any chart → vertical line on all)
   // ═══════════════════════════════════════════════════════════════════
+
+  function attachCrosshair(divId) {
+    const el = document.getElementById(divId);
+    el.removeAllListeners?.('plotly_hover');
+    el.removeAllListeners?.('plotly_unhover');
+
+    el.on('plotly_hover', function(eventData) {
+      if (!eventData?.points?.length) return;
+      const x = eventData.points[0].x;
+      CHART_ORDER.forEach(vk => {
+        Plotly.relayout(`chart-${vk}`, {
+          shapes: [{
+            type:    'line',
+            xref:    'x',
+            yref:    'paper',
+            x0: x, x1: x,
+            y0: 0,  y1: 1,
+            line: { color: 'rgba(255,255,255,0.25)', width: 1, dash: 'dot' },
+          }]
+        });
+      });
+    });
+
+    el.on('plotly_unhover', function() {
+      CHART_ORDER.forEach(vk => {
+        Plotly.relayout(`chart-${vk}`, { shapes: [] });
+      });
+    });
+  }
+
 
   function hexAlpha(hex, a) {
     const r = parseInt(hex.slice(1,3), 16);
