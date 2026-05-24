@@ -696,7 +696,7 @@
   //  Layout builder
   // ═══════════════════════════════════════════════════════════════════
 
-  function makePlotLayout(varKey, isTall) {
+  function makePlotLayout(varKey, isTall, hovermode) {
     return {
       paper_bgcolor: 'rgba(0,0,0,0)',
       plot_bgcolor:  '#0b1d38',
@@ -720,7 +720,7 @@
         zeroline: false,
         linecolor: '#1a2f4a',
       },
-      hovermode: 'x unified',
+      hovermode: hovermode || 'x unified',
       hoverlabel: {
         bgcolor: '#162944',
         bordercolor: '#2a4a70',
@@ -756,7 +756,7 @@
         ? buildMemberTraces(varData, cfg, varKey)
         : buildDefaultTraces(varData, cfg);
 
-      const layout = makePlotLayout(varKey, isTall);
+      const layout = makePlotLayout(varKey, isTall, isHL ? 'closest' : 'x unified');
       Plotly.react(divId, traces, layout, PLOTLY_CFG);
 
       // Axis sync on pan/zoom + crosshair + member hover tracking
@@ -804,11 +804,11 @@
 
     el.on('plotly_hover', function(eventData) {
       if (!eventData?.points?.length) return;
-      const pt         = eventData.points[0];
-      const x          = pt.x;
-      const curveNum   = pt.curveNumber;
+      const pt       = eventData.points[0];
+      const x        = pt.x;
+      const curveNum = pt.curveNumber;
 
-      // Track hovered member (only active highlighted lines count)
+      // With hovermode:'closest', curveNumber is the actual line under the cursor
       S.hoveredMember = (curveNum < 50 && S.activeMembers.includes(curveNum))
         ? curveNum : null;
 
