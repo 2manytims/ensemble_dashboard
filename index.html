@@ -628,21 +628,42 @@
   }
 
   // ── Member click ──────────────────────────────────────────────────
+  // mousedown captures member + range BEFORE Plotly's relayout fires.
+  // click (mouseup) then acts on those captured values.
 
   function attachMemberClick(divId) {
     const el = document.getElementById(divId);
-    if (el._mch) el.removeEventListener('click', el._mch);
-    el._mch = function() {
-      if (S.hoveredMember === null) return;
-      if (!S.activeMembers.includes(S.hoveredMember)) return;
-      const prev = S.focusedMember;
-      S.focusedMember = prev === S.hoveredMember ? null : S.hoveredMember;
-      withZoom(function(range) {
-        updateMemberBar();
-        renderAll(range);
-      });
+    if (el._mch_down) el.removeEventListener('mousedown', el._mch_down);
+    if (el._mch_up)   el.removeEventListener('click',     el._mch_up);
+
+    let downMember = null;
+    let downRange  = null;
+
+    el._mch_down = function() {
+      if (S.hoveredMember === null || !S.activeMembers.includes(S.hoveredMember)) {
+        downMember = null; downRange = null; return;
+      }
+      // Capture synchronously — Plotly hasn't fired relayout yet
+      downMember = S.hoveredMember;
+      const firstEl = document.getElementById('chart-' + CHART_ORDER[0]);
+      downRange = (firstEl && firstEl._fullLayout && firstEl._fullLayout.xaxis && firstEl._fullLayout.xaxis.range)
+        ? firstEl._fullLayout.xaxis.range.slice()
+        : (S.zoomRange ? S.zoomRange.slice() : null);
     };
-    el.addEventListener('click', el._mch);
+
+    el._mch_up = function() {
+      if (downMember === null) return;
+      const m   = downMember;
+      const rng = downRange;
+      downMember = null; downRange = null;
+      if (!S.activeMembers.includes(m)) return;
+      S.focusedMember = S.focusedMember === m ? null : m;
+      updateMemberBar();
+      renderAll(rng);
+    };
+
+    el.addEventListener('mousedown', el._mch_down);
+    el.addEventListener('click',     el._mch_up);
   }
 
   // ── T850 Modal ────────────────────────────────────────────────────
