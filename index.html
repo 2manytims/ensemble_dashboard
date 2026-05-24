@@ -339,6 +339,7 @@
     station:         null,
     selectedMembers: [],   // all 10 members from tail selection
     activeMembers:   [],   // subset currently toggled on via chips
+    rankedOrder:     [],   // selectedMembers ordered by value (best → worst)
     highlightDir:    'top',
     focusedMember:   null,
     hoveredMember:   null, // member index currently under cursor
@@ -459,6 +460,7 @@
     S.station        = name;
     S.selectedMembers = [];
     S.activeMembers  = [];
+    S.rankedOrder    = [];
     S.focusedMember  = null;
     S.hoveredMember  = null;
 
@@ -528,6 +530,10 @@
       ? ranked.slice(-10).map(r => r.i)
       : ranked.slice(0, 10).map(r => r.i);
     S.activeMembers   = [...S.selectedMembers];
+    // Chips ordered best→worst: highest first for top, lowest first for bottom
+    S.rankedOrder     = direction === 'top'
+      ? ranked.slice(-10).reverse().map(r => r.i)
+      : ranked.slice(0, 10).map(r => r.i);
 
     updateMemberBar();
     renderAll();
@@ -536,6 +542,7 @@
   function clearHighlight() {
     S.selectedMembers = [];
     S.activeMembers   = [];
+    S.rankedOrder     = [];
     S.focusedMember   = null;
     S.hoveredMember   = null;
     updateMemberBar();
@@ -554,7 +561,7 @@
     const chipClass = S.highlightDir === 'top' ? 'chip-hot' : 'chip-cold';
     const dirLabel  = S.highlightDir === 'top' ? 'Highest 10' : 'Lowest 10';
     const varLabel  = VARS[document.getElementById('rank-var').value]?.label || '';
-    const sorted    = [...S.selectedMembers].sort((a, b) => a - b);
+    const sorted = S.rankedOrder.length ? S.rankedOrder : [...S.selectedMembers].sort((a, b) => a - b);
 
     bar.className = 'member-bar';
     bar.innerHTML =
