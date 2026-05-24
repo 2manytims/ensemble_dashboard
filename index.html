@@ -249,6 +249,7 @@
     highlightDir:    'top',
     focusedMember:   null,
     hoveredMember:   null,
+    zoomRange:       null,
     isSyncing:       false,
   };
 
@@ -354,6 +355,7 @@
     S.rankedOrder     = [];
     S.focusedMember   = null;
     S.hoveredMember   = null;
+    S.zoomRange       = null;
     updateMemberBar();
     hideT850();
   }
@@ -458,11 +460,17 @@
 
   // ── Zoom helper ───────────────────────────────────────────────────
 
+  // Store zoom in state so it survives Plotly.react re-renders
+  function saveZoom() {
+    const el = document.getElementById('chart-' + CHART_ORDER[0]);
+    if (el && el._fullLayout && el._fullLayout.xaxis && el._fullLayout.xaxis.range) {
+      S.zoomRange = el._fullLayout.xaxis.range.slice();
+    }
+  }
+
   function withZoom(fn) {
-    const el  = document.getElementById('chart-' + CHART_ORDER[0]);
-    const rng = el && el._fullLayout && el._fullLayout.xaxis && el._fullLayout.xaxis.range
-      ? el._fullLayout.xaxis.range.slice() : null;
-    fn(rng);
+    saveZoom();
+    fn(S.zoomRange || null);
   }
 
   // ── Percentile helpers ────────────────────────────────────────────
@@ -571,6 +579,8 @@
       if (S.isSyncing) return;
       const r0 = ed['xaxis.range[0]'], r1 = ed['xaxis.range[1]'];
       const auto = ed['xaxis.autorange'];
+      if (r0 && r1) S.zoomRange = [r0, r1];
+      if (auto)     S.zoomRange = null;
       if (!r0 && !auto) return;
       S.isSyncing = true;
       CHART_ORDER.forEach(vk => {
