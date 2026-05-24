@@ -8,326 +8,114 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #0a1628;
-      --bg2:         #0d1f3c;
-      --bg3:         #111e35;
-      --bg4:         #142240;
-      --accent:      #00aeef;
-      --hot:         #FF6B35;
-      --cold:        #4FC3F7;
-      --focus:       #FFD700;
-      --dim:         #1e3a5f;
-      --text:        #e8edf5;
-      --text2:       #8899aa;
-      --border:      #1a2f4a;
-      --font:        'Inter', 'Segoe UI', system-ui, sans-serif;
-      --radius:      8px;
+      --bg:      #0a1628;
+      --bg2:     #0d1f3c;
+      --bg3:     #111e35;
+      --bg4:     #142240;
+      --accent:  #00aeef;
+      --hot:     #FF6B35;
+      --cold:    #4FC3F7;
+      --focus:   #FFD700;
+      --dim:     #1e3554;
+      --text:    #e8edf5;
+      --text2:   #8899aa;
+      --border:  #1a2f4a;
+      --radius:  8px;
+      --font:    'Inter', 'Segoe UI', system-ui, sans-serif;
     }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--font);
-      font-size: 13px;
-      min-height: 100vh;
-    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 13px; min-height: 100vh; }
 
-    /* ── Header ─────────────────────────────────────────────────────── */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 24px;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-    }
+    /* Header */
+    .header { display: flex; align-items: center; justify-content: space-between; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); gap: 12px; }
     .header-brand { display: flex; flex-direction: column; gap: 2px; }
-    .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+    .brand-name { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: .5px; }
     .brand-sub  { font-size: 10px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; }
     .header-title { font-size: 17px; font-weight: 600; color: #fff; }
-    .run-badge {
-      background: var(--bg4);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 4px 12px;
-      font-size: 12px;
-      color: var(--text2);
-    }
+    .run-badge { background: var(--bg4); border: 1px solid var(--border); border-radius: 6px; padding: 4px 12px; font-size: 12px; color: var(--text2); white-space: nowrap; }
     .run-badge span { color: var(--accent); font-weight: 600; }
+    .season-wrap { display: flex; align-items: center; gap: 8px; }
+    .season-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; }
 
-    /* ── Station Tabs ────────────────────────────────────────────────── */
-    .station-nav {
-      display: flex;
-      gap: 4px;
-      padding: 10px 24px 0;
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-    }
-    .tab-btn {
-      padding: 7px 20px;
-      border: none;
-      background: transparent;
-      color: var(--text2);
-      font: inherit;
-      font-size: 13px;
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-      transition: color .15s, border-color .15s;
-      border-radius: 6px 6px 0 0;
-    }
+    /* Station Tabs */
+    .station-nav { display: flex; gap: 4px; padding: 10px 24px 0; background: var(--bg2); border-bottom: 1px solid var(--border); }
+    .tab-btn { padding: 7px 20px; border: none; background: transparent; color: var(--text2); font: inherit; font-size: 13px; cursor: pointer; border-bottom: 3px solid transparent; border-radius: 6px 6px 0 0; transition: color .15s, border-color .15s; }
     .tab-btn:hover { color: var(--text); background: var(--bg4); }
-    .tab-btn.active {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-      background: var(--bg3);
-    }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: var(--bg3); }
 
-    /* ── Analysis Panel ─────────────────────────────────────────────── */
-    .analysis-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 14px 24px;
-      background: var(--bg3);
-      border-bottom: 1px solid var(--border);
-    }
-    .analysis-title {
-      font-size: 10px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--text2);
-    }
-    .analysis-controls {
-      display: flex;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+    /* Analysis Panel */
+    .analysis-panel { display: flex; flex-direction: column; gap: 8px; padding: 12px 24px; background: var(--bg3); border-bottom: 1px solid var(--border); }
+    .analysis-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text2); }
+    .analysis-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
     .ctrl-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
-    select {
-      background: var(--bg4);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      padding: 5px 8px;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-    }
+    select { background: var(--bg4); color: var(--text); border: 1px solid var(--border); border-radius: 5px; padding: 5px 8px; font: inherit; font-size: 12px; cursor: pointer; }
     select:focus { outline: none; border-color: var(--accent); }
-    .btn {
-      padding: 6px 14px;
-      border: none;
-      border-radius: 5px;
-      font: inherit;
-      font-size: 12px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: opacity .15s;
-    }
-    .btn:hover { opacity: 0.85; }
-    .btn-hot  { background: var(--hot);   color: #fff; }
-    .btn-cold { background: var(--cold);  color: #0a1628; }
+    .btn { padding: 6px 14px; border: none; border-radius: 5px; font: inherit; font-size: 12px; cursor: pointer; font-weight: 600; transition: opacity .15s; }
+    .btn:hover { opacity: .85; }
+    .btn-hot   { background: var(--hot);  color: #fff; }
+    .btn-cold  { background: var(--cold); color: #0a1628; }
     .btn-clear { background: var(--bg4); color: var(--text2); border: 1px solid var(--border); }
-    .ctrl-sep { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+    .ctrl-sep  { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
 
-    .member-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-      min-height: 24px;
-    }
+    /* Member Bar */
+    .member-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-height: 24px; }
     .member-bar-label { font-size: 11px; color: var(--text2); }
-    .member-chip {
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      user-select: none;
-      transition: opacity .15s, box-shadow .15s;
-    }
-    .member-chip:hover { opacity: 0.75; }
-    .chip-hot  { background: rgba(255,107,53,0.2); color: var(--hot);  border: 1px solid rgba(255,107,53,0.4); }
-    .chip-cold { background: rgba(79,195,247,0.2); color: var(--cold); border: 1px solid rgba(79,195,247,0.4); }
-    .chip-inactive { opacity: 0.28; text-decoration: line-through; }
-    .chip-inactive:hover { opacity: 0.5; }
+    .member-chip { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; cursor: pointer; user-select: none; transition: opacity .15s, box-shadow .15s; }
+    .member-chip:hover { opacity: .75; }
+    .chip-hot  { background: rgba(255,107,53,.2); color: var(--hot);  border: 1px solid rgba(255,107,53,.4); }
+    .chip-cold { background: rgba(79,195,247,.2); color: var(--cold); border: 1px solid rgba(79,195,247,.4); }
+    .chip-inactive { opacity: .28; text-decoration: line-through; }
+    .chip-inactive:hover { opacity: .5; }
     .chip-focused { box-shadow: 0 0 0 2px var(--focus); }
-    .member-bar.empty .member-bar-label { color: var(--text2); font-style: italic; }
-    .hint {
-      font-size: 11px;
-      color: var(--text2);
-      margin-left: auto;
-      font-style: italic;
-    }
 
-    /* ── Charts Grid ─────────────────────────────────────────────────── */
-    .dashboard-body {
-      display: grid;
-      grid-template-columns: 1fr;
-      transition: grid-template-columns .2s ease;
-    }
-    .dashboard-body.t850-open {
-      grid-template-columns: 1fr 320px;
-    }
-    .charts-outer {
-      padding: 16px 24px 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      min-width: 0;
-    }
-    .charts-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-    }
+    /* Dashboard body */
+    .dashboard-body { display: grid; grid-template-columns: 1fr; }
+    .dashboard-body.t850-open { grid-template-columns: 1fr 310px; }
+
+    /* Charts */
+    .charts-outer { padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .charts-row.full { grid-template-columns: 1fr; }
-
-    .chart-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    .chart-card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px 6px;
-      border-bottom: 1px solid var(--border);
-    }
-    .chart-card-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-    }
+    .chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .chart-card-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 5px; border-bottom: 1px solid var(--border); }
+    .chart-card-title { font-size: 12px; font-weight: 600; }
     .chart-unit { font-size: 11px; color: var(--text2); }
-    .chart-legend {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .legend-item {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      color: var(--text2);
-    }
-    .legend-line {
-      width: 18px;
-      height: 2px;
-      border-radius: 1px;
-    }
-    .legend-band {
-      width: 12px;
-      height: 10px;
-      border-radius: 2px;
-    }
+    .chart-legend { display: flex; align-items: center; gap: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text2); }
+    .legend-swatch { width: 14px; height: 8px; border-radius: 2px; }
+    .legend-line { width: 16px; height: 2px; border-radius: 1px; }
     .chart-div { width: 100%; }
 
-    /* ── T850 Sidebar ────────────────────────────────────────────────── */
-    .t850-sidebar {
-      display: none;
-      flex-direction: column;
-      background: var(--bg2);
-      border-left: 1px solid var(--border);
-      min-width: 0;
-    }
+    /* T850 Sidebar */
+    .t850-sidebar { display: none; flex-direction: column; background: var(--bg2); border-left: 1px solid var(--border); min-width: 0; }
     .t850-sidebar.visible { display: flex; }
-    .t850-sidebar-header {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .t850-sidebar-title { font-size: 12px; font-weight: 600; color: var(--text); }
-    .t850-member-badge {
-      font-size: 10px;
-      background: rgba(255,215,0,0.15);
-      color: #FFD700;
-      border: 1px solid rgba(255,215,0,0.4);
-      border-radius: 10px;
-      padding: 2px 8px;
-    }
-    .t850-chart-wrap { padding: 8px 10px 0; }
-    .t850-stats {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 10px 14px;
-      border-top: 1px solid var(--border);
-    }
-    .t850-stats-title {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text2);
-      margin-bottom: 2px;
-    }
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+    .t850-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+    .t850-title { font-size: 12px; font-weight: 600; color: var(--text); }
+    .t850-sub   { font-size: 10px; color: var(--text2); margin-top: 2px; }
+    .t850-badge { font-size: 10px; background: rgba(255,215,0,.15); color: var(--focus); border: 1px solid rgba(255,215,0,.4); border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
+    .t850-chart-wrap { padding: 8px 8px 0; }
+    .t850-stats { display: flex; flex-direction: column; gap: 5px; padding: 10px 14px; border-top: 1px solid var(--border); }
+    .t850-stats-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); margin-bottom: 3px; }
+    .stat-row { display: flex; justify-content: space-between; align-items: center; }
     .stat-label { font-size: 11px; color: var(--text2); }
     .stat-val   { font-size: 11px; font-weight: 600; color: var(--text); }
-    .stat-val.hot  { color: #FF6B35; }
-    .stat-val.cold { color: #4FC3F7; }
-    .stat-val.gold { color: #FFD700; }
-    .t850-context {
-      padding: 10px 14px;
-      border-top: 1px solid var(--border);
-      font-size: 10px;
-      color: var(--text2);
-      line-height: 1.6;
-    }
+    .stat-hot   { color: var(--hot); }
+    .stat-cold  { color: var(--cold); }
+    .stat-gold  { color: var(--focus); }
+    .t850-context { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 10px; color: var(--text2); line-height: 1.6; }
 
-    /* ── Footer ──────────────────────────────────────────────────────── */
-    footer {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px 24px;
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      font-size: 11px;
-      color: var(--text2);
-    }
+    /* Footer */
+    footer { display: flex; justify-content: space-between; padding: 10px 24px; background: var(--bg2); border-top: 1px solid var(--border); font-size: 11px; color: var(--text2); }
 
-    /* ── Loading / Error ─────────────────────────────────────────────── */
-    .loading {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      height: 300px;
-      color: var(--text2);
-      font-size: 14px;
-    }
-    .error-box {
-      margin: 40px auto;
-      max-width: 600px;
-      background: rgba(255,107,53,0.1);
-      border: 1px solid rgba(255,107,53,0.4);
-      border-radius: var(--radius);
-      padding: 24px;
-      color: var(--text);
-    }
+    /* Misc */
+    .loading { display: flex; align-items: center; justify-content: center; height: 260px; color: var(--text2); font-size: 14px; }
+    .error-box { margin: 40px auto; max-width: 600px; background: rgba(255,107,53,.1); border: 1px solid rgba(255,107,53,.4); border-radius: var(--radius); padding: 24px; }
     .error-box h3 { color: var(--hot); margin-bottom: 12px; }
     .error-box code { background: var(--bg4); padding: 2px 6px; border-radius: 3px; font-size: 12px; }
-
-    @media (max-width: 700px) {
-      .charts-row { grid-template-columns: 1fr; }
-      .header-title { display: none; }
-    }
   </style>
 </head>
 <body>
 
-  <!-- Header -->
   <header class="header">
     <div class="header-brand">
       <span class="brand-name">MetraWeather</span>
@@ -335,19 +123,17 @@
     </div>
     <span class="header-title">EC Ensemble Dashboard</span>
     <div class="run-badge">Run: <span id="run-label">…</span></div>
-    <div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Season</span>
-      <select id="season-select" onchange="setSeason(this.value)" style="font-size:12px;padding:4px 10px">
+    <div class="season-wrap">
+      <span class="season-label">Season</span>
+      <select id="season-select" onchange="setSeason(this.value)">
         <option value="summer">☀ Summer</option>
         <option value="winter">❄ Winter</option>
       </select>
     </div>
   </header>
 
-  <!-- Station Tabs -->
   <nav class="station-nav" id="station-nav"></nav>
 
-  <!-- Analysis Panel -->
   <div class="analysis-panel">
     <div class="analysis-title">Tail Scenario Analysis</div>
     <div class="analysis-controls">
@@ -362,45 +148,35 @@
         <option value="td">Dew Point</option>
       </select>
       <span class="ctrl-label">at</span>
-      <select id="time-select" style="min-width:180px"></select>
+      <select id="time-select" style="min-width:185px"></select>
       <div class="ctrl-sep"></div>
-      <button class="btn btn-hot"   id="btn-top"    onclick="highlightTail('top')">▲ Hottest / Highest 10</button>
-      <button class="btn btn-cold"  id="btn-bottom" onclick="highlightTail('bottom')">▼ Coldest / Lowest 10</button>
+      <button class="btn btn-hot"   onclick="highlightTail('top')">▲ Hottest / Highest 10</button>
+      <button class="btn btn-cold"  onclick="highlightTail('bottom')">▼ Coldest / Lowest 10</button>
       <button class="btn btn-clear" onclick="clearHighlight()">✕ Clear</button>
-      <span class="hint" id="hint-text">Click a highlighted member line to focus it</span>
     </div>
-    <div class="member-bar empty" id="member-bar">
-      <span class="member-bar-label">Select a variable and time step above, then highlight the extreme members across all charts.</span>
+    <div class="member-bar" id="member-bar">
+      <span class="member-bar-label" style="font-style:italic">Select a variable and time step above, then highlight the extreme members across all charts.</span>
     </div>
   </div>
 
-  <!-- Dashboard body: charts + optional T850 sidebar -->
   <div class="dashboard-body" id="dashboard-body">
-
-    <!-- Charts -->
     <div class="charts-outer" id="charts-outer">
-      <div class="loading" id="loading-msg">Loading ensemble data…</div>
+      <div class="loading">Loading ensemble data…</div>
     </div>
-
-    <!-- T850 Sidebar (shown when member focused) -->
     <div class="t850-sidebar" id="t850-sidebar">
-      <div class="t850-sidebar-header">
+      <div class="t850-header">
         <div>
-          <div class="t850-sidebar-title">850 hPa Temperature</div>
-          <div style="font-size:10px;color:var(--text2);margin-top:2px">Synoptic proxy · focused member</div>
+          <div class="t850-title">850 hPa Temperature</div>
+          <div class="t850-sub">Synoptic proxy · focused member</div>
         </div>
-        <div class="t850-member-badge" id="t850-member-badge">–</div>
+        <div class="t850-badge" id="t850-badge">–</div>
       </div>
-      <div class="t850-chart-wrap">
-        <div id="chart-t850-panel"></div>
-      </div>
-      <div class="t850-stats" id="t850-stats"></div>
+      <div class="t850-chart-wrap"><div id="chart-t850"></div></div>
+      <div class="t850-stats"   id="t850-stats"></div>
       <div class="t850-context" id="t850-context"></div>
     </div>
-
   </div>
 
-  <!-- Footer -->
   <footer>
     <span>MetraWeather Pty Ltd · Australian Consult Team</span>
     <span id="footer-run">–</span>
@@ -408,9 +184,7 @@
 
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
   <script>
-  // ═══════════════════════════════════════════════════════════════════
-  //  Configuration
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Config ────────────────────────────────────────────────────────
 
   const VARS = {
     tmax:          { label: 'Max Temperature',      unit: '°C',   color: '#e06c75' },
@@ -422,30 +196,38 @@
     tcld:          { label: 'Cloud Cover',          unit: '%',    color: '#98c379' },
   };
 
-  // Season layouts: each entry is array of rows, each row is array of varKeys
   const SEASON_LAYOUTS = {
-    summer: [
-      ['tmax', 'apparent_temp'],
-      ['ff100', 'swrad6'],
-      ['tcld'],
-    ],
-    winter: [
-      ['tmin', 'ff100'],
-      ['swrad6', 'tcld'],
-    ],
+    summer: [ ['tmax','apparent_temp'], ['ff100','swrad6'], ['tcld'] ],
+    winter: [ ['tmin','ff100'],         ['swrad6','tcld']            ],
   };
 
-  // Flat ordered list of vars for the current season (set on season change)
-  let CHART_ORDER = ['tmax', 'apparent_temp', 'ff100', 'swrad6', 'tcld'];
+  const T850_TEXT = {
+    summer: {
+      tmax:          'T850 is a proxy for the synoptic pattern driving this member\'s surface outcome. A warm T850 anomaly indicates a warm airmass aloft, consistent with a heat event scenario.',
+      apparent_temp: 'T850 provides upper-level context for this member\'s apparent temperature. A warm, moist airmass aloft typically correlates with high dewpoint and reduced overnight cooling at the surface.',
+      ff100:         'T850 reflects the thermal gradient driving this member\'s wind scenario. Strong horizontal T850 gradients indicate a tight pressure pattern, consistent with elevated wind generation potential.',
+      swrad6:        'T850 alone is a weaker proxy for solar outcomes — cloud cover is more strongly driven by moisture and synoptic lifting than by temperature aloft. Use T850 as a broad indicator of airmass character.',
+      tcld:          'T850 alone is a weaker proxy for cloud cover. Use it as a broad indicator of airmass character rather than a direct cloud signal.',
+      td:            'T850 provides upper-level context for moisture. A warm moist airmass aloft often supports higher dewpoint at the surface, particularly ahead of troughs.',
+    },
+    winter: {
+      tmin:   'T850 is a strong proxy for overnight minimum temperatures. A cold T850 anomaly indicates a deep cold airmass aloft, consistent with elevated heating demand and potential frost risk.',
+      ff100:  'T850 reflects the thermal gradient driving this member\'s wind scenario. Strong horizontal T850 gradients indicate a tight pressure pattern, consistent with elevated wind generation potential.',
+      swrad6: 'T850 alone is a weaker proxy for solar outcomes in winter — cloud cover is more strongly driven by frontal activity and moisture than by temperature aloft.',
+      tcld:   'T850 alone is a weaker proxy for cloud cover. Use it as a broad indicator of airmass character rather than a direct cloud signal.',
+    },
+  };
+
+  const FALLBACK_T850 = 'T850 provides synoptic context for this member\'s scenario. Anomalies from the ensemble mean indicate how different this member\'s upper-level airmass is from the central forecast.';
 
   const HOT_COLOR   = '#FF6B35';
   const COLD_COLOR  = '#4FC3F7';
   const FOCUS_COLOR = '#FFD700';
   const DIM_COLOR   = '#1e3554';
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Application State
-  // ═══════════════════════════════════════════════════════════════════
+  let CHART_ORDER = [];
+
+  // ── State ─────────────────────────────────────────────────────────
 
   const S = {
     data:            null,
@@ -460,60 +242,51 @@
     isSyncing:       false,
   };
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Bootstrap
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Boot ─────────────────────────────────────────────────────────
 
   async function init() {
     try {
       const res = await fetch('data/ensemble_data.json');
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       S.data = await res.json();
     } catch (err) {
       showError(err);
       return;
     }
 
-    const meta  = S.data.meta;
-    const stns  = Object.keys(S.data.stations);
-    S.station   = stns[0];
+    const meta = S.data.meta;
+    const stns = Object.keys(S.data.stations);
+    S.station  = stns[0];
 
-    document.getElementById('run-label').textContent   = meta.run_label;
-    document.getElementById('footer-run').textContent  = 'Run: ' + meta.run_label;
+    document.getElementById('run-label').textContent  = meta.run_label;
+    document.getElementById('footer-run').textContent = 'Run: ' + meta.run_label;
 
-    // Station tabs
     const nav = document.getElementById('station-nav');
     stns.forEach((stn, i) => {
       const btn = document.createElement('button');
-      btn.className  = 'tab-btn' + (i === 0 ? ' active' : '');
+      btn.className   = 'tab-btn' + (i === 0 ? ' active' : '');
       btn.textContent = stn;
-      btn.onclick    = () => setStation(stn);
+      btn.onclick     = () => setStation(stn);
       nav.appendChild(btn);
     });
 
-    // Controls
     document.getElementById('rank-var').onchange = () => {
       populateTimeSelect();
       if (S.selectedMembers.length) highlightTail(S.highlightDir);
     };
 
-    // Build chart layout
     buildChartLayout();
     populateTimeSelect();
     renderAll();
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Layout builder  (called once)
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Layout ────────────────────────────────────────────────────────
 
   function buildChartLayout() {
     const outer = document.getElementById('charts-outer');
     outer.innerHTML = '';
-
     const rows = SEASON_LAYOUTS[S.season];
 
-    // Update CHART_ORDER to match current season's flat variable list
     CHART_ORDER.length = 0;
     rows.forEach(row => row.forEach(vk => CHART_ORDER.push(vk)));
 
@@ -521,41 +294,24 @@
       const rowEl = document.createElement('div');
       rowEl.className = 'charts-row' + (row.length === 1 ? ' full' : '');
 
-      row.forEach(varKey => {
-        const cfg    = VARS[varKey];
-        const card   = document.createElement('div');
+      row.forEach(vk => {
+        const cfg  = VARS[vk];
+        const card = document.createElement('div');
         card.className = 'chart-card';
-
-        card.innerHTML = `
-          <div class="chart-card-header">
-            <span class="chart-card-title" style="color:${cfg.color}">
-              ${cfg.label}
-            </span>
-            <div style="display:flex;align-items:center;gap:14px">
-              <div class="chart-legend" id="legend-${varKey}">
-                <div class="legend-item">
-                  <div class="legend-band" style="background:${hexAlpha(cfg.color,0.18)}"></div>
-                  <span>10–90th</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-band" style="background:${hexAlpha(cfg.color,0.40)}"></div>
-                  <span>25–75th</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-line" style="background:${cfg.color}"></div>
-                  <span>Median</span>
-                </div>
-                <div class="legend-item">
-                  <div class="legend-line" style="background:#fff;opacity:0.6;border-top:2px dashed #fff"></div>
-                  <span>Mean</span>
-                </div>
-              </div>
-              <span class="chart-unit">${cfg.unit}</span>
-            </div>
-          </div>
-          <div id="chart-${varKey}" class="chart-div"></div>
-        `;
-
+        card.innerHTML =
+          '<div class="chart-card-header">' +
+            '<span class="chart-card-title" style="color:' + cfg.color + '">' + cfg.label + '</span>' +
+            '<div style="display:flex;align-items:center;gap:12px">' +
+              '<div class="chart-legend">' +
+                '<div class="legend-item"><div class="legend-swatch" style="background:' + hexAlpha(cfg.color,.15) + '"></div><span>10–90th</span></div>' +
+                '<div class="legend-item"><div class="legend-swatch" style="background:' + hexAlpha(cfg.color,.38) + '"></div><span>25–75th</span></div>' +
+                '<div class="legend-item"><div class="legend-line" style="background:' + cfg.color + '"></div><span>Median</span></div>' +
+                '<div class="legend-item"><div class="legend-line" style="background:rgba(255,255,255,.55);border-top:2px dashed #fff"></div><span>Mean</span></div>' +
+              '</div>' +
+              '<span class="chart-unit">' + cfg.unit + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div id="chart-' + vk + '" class="chart-div"></div>';
         rowEl.appendChild(card);
       });
 
@@ -563,662 +319,396 @@
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Station switching
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Station / Season ──────────────────────────────────────────────
 
   function setStation(name) {
-    S.station        = name;
-    S.selectedMembers = [];
-    S.activeMembers  = [];
-    S.rankedOrder    = [];
-    S.focusedMember  = null;
-    S.hoveredMember  = null;
-
+    S.station = name;
+    resetHighlight();
     document.querySelectorAll('.tab-btn').forEach(b =>
       b.classList.toggle('active', b.textContent === name));
-
     populateTimeSelect();
-    updateMemberBar();
     renderAll();
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Season switching
-  // ═══════════════════════════════════════════════════════════════════
-
   function setSeason(season) {
-    S.season         = season;
-    S.selectedMembers = [];
-    S.activeMembers  = [];
-    S.rankedOrder    = [];
-    S.focusedMember  = null;
-    S.hoveredMember  = null;
-    clearHighlight(true);
+    S.season = season;
+    resetHighlight();
     buildChartLayout();
     populateTimeSelect();
     renderAll();
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Time select population
-  // ═══════════════════════════════════════════════════════════════════
-
-  const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-  function formatTimeLabel(isoStr, firstIsoStr) {
-    const dt    = new Date(isoStr);
-    const first = new Date(firstIsoStr);
-    const dayN  = Math.round((dt - first) / 86400000);
-    const hh    = String(dt.getUTCHours()).padStart(2, '0');
-    const dow   = DAYS[dt.getUTCDay()];
-    return `D+${dayN}  ${dow} ${dt.getUTCDate()} ${MONTHS[dt.getUTCMonth()]}  ${hh}Z`;
-  }
-
-  function populateTimeSelect() {
-    const varKey    = document.getElementById('rank-var').value;
-    const sel       = document.getElementById('time-select');
-    const varData   = S.data.stations[S.station]?.[varKey];
-    const prevIdx   = sel.selectedIndex;
-
-    sel.innerHTML = '';
-    if (!varData) return;
-
-    const { times } = varData;
-    times.forEach((t, i) => {
-      const opt       = document.createElement('option');
-      opt.value       = i;
-      opt.textContent = formatTimeLabel(t, times[0]);
-      sel.appendChild(opt);
-    });
-
-    // Default: roughly D+5 midday
-    const defaultIdx = Math.min(prevIdx >= 0 ? prevIdx : 30, times.length - 1);
-    sel.selectedIndex = defaultIdx;
-  }
-
-  // ═══════════════════════════════════════════════════════════════════
-  //  Tail highlighting
-  // ═══════════════════════════════════════════════════════════════════
-
-  function highlightTail(direction) {
-    const varKey   = document.getElementById('rank-var').value;
-    const timeIdx  = parseInt(document.getElementById('time-select').value);
-    const varData  = S.data.stations[S.station]?.[varKey];
-    if (!varData) return;
-
-    const ranked = varData.members
-      .map((series, i) => ({ i, v: series[timeIdx] ?? 0 }))
-      .sort((a, b) => a.v - b.v);
-
-    S.highlightDir    = direction;
-    S.focusedMember   = null;
-    S.selectedMembers = direction === 'top'
-      ? ranked.slice(-10).map(r => r.i)
-      : ranked.slice(0, 10).map(r => r.i);
-    S.activeMembers   = [...S.selectedMembers];
-    // Chips ordered best→worst: highest first for top, lowest first for bottom
-    S.rankedOrder     = direction === 'top'
-      ? ranked.slice(-10).reverse().map(r => r.i)
-      : ranked.slice(0, 10).map(r => r.i);
-
-    updateMemberBar();
-    renderAll();
-    renderT850Panel();
-  }
+  function resetHighlight() {
     S.selectedMembers = [];
     S.activeMembers   = [];
     S.rankedOrder     = [];
     S.focusedMember   = null;
     S.hoveredMember   = null;
     updateMemberBar();
-    renderT850Panel();
-    if (!silent) renderAll();
+    hideT850();
   }
+
+  // ── Time select ───────────────────────────────────────────────────
+
+  const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function fmtTime(iso, first) {
+    const dt   = new Date(iso);
+    const base = new Date(first);
+    const dayN = Math.round((dt - base) / 86400000);
+    const hh   = String(dt.getUTCHours()).padStart(2,'0');
+    return 'D+' + dayN + '  ' + DAYS[dt.getUTCDay()] + ' ' + dt.getUTCDate() + ' ' + MONTHS[dt.getUTCMonth()] + '  ' + hh + 'Z';
+  }
+
+  function populateTimeSelect() {
+    const vk  = document.getElementById('rank-var').value;
+    const sel = document.getElementById('time-select');
+    const vd  = S.data.stations[S.station]?.[vk];
+    const prev = sel.selectedIndex;
+    sel.innerHTML = '';
+    if (!vd) return;
+    vd.times.forEach((t, i) => {
+      const o = document.createElement('option');
+      o.value = i; o.textContent = fmtTime(t, vd.times[0]);
+      sel.appendChild(o);
+    });
+    sel.selectedIndex = Math.min(prev >= 0 ? prev : 30, vd.times.length - 1);
+  }
+
+  // ── Tail highlighting ─────────────────────────────────────────────
+
+  function highlightTail(dir) {
+    const vk      = document.getElementById('rank-var').value;
+    const tIdx    = parseInt(document.getElementById('time-select').value);
+    const vd      = S.data.stations[S.station]?.[vk];
+    if (!vd) return;
+
+    const ranked = vd.members
+      .map((s, i) => ({ i, v: s[tIdx] ?? 0 }))
+      .sort((a, b) => a.v - b.v);
+
+    S.highlightDir    = dir;
+    S.focusedMember   = null;
+    S.hoveredMember   = null;
+    S.selectedMembers = dir === 'top' ? ranked.slice(-10).map(r => r.i) : ranked.slice(0,10).map(r => r.i);
+    S.activeMembers   = [...S.selectedMembers];
+    S.rankedOrder     = dir === 'top' ? ranked.slice(-10).reverse().map(r => r.i) : ranked.slice(0,10).map(r => r.i);
+
+    updateMemberBar();
+    hideT850();
+    renderAll();
+  }
+
+  function clearHighlight() {
+    resetHighlight();
+    renderAll();
+  }
+
+  // ── Member bar ────────────────────────────────────────────────────
 
   function updateMemberBar() {
     const bar = document.getElementById('member-bar');
     if (!S.selectedMembers.length) {
-      bar.className = 'member-bar empty';
-      bar.innerHTML = '<span class="member-bar-label">Select a variable and time step above, then highlight the extreme members across all charts.</span>';
-      document.getElementById('hint-text').style.display = 'none';
+      bar.innerHTML = '<span class="member-bar-label" style="font-style:italic">Select a variable and time step above, then highlight the extreme members across all charts.</span>';
       return;
     }
+    const cls  = S.highlightDir === 'top' ? 'chip-hot' : 'chip-cold';
+    const lbl  = S.highlightDir === 'top' ? 'Highest 10' : 'Lowest 10';
+    const vLbl = VARS[document.getElementById('rank-var').value]?.label || '';
+    const ord  = S.rankedOrder.length ? S.rankedOrder : [...S.selectedMembers].sort((a,b)=>a-b);
 
-    const chipClass = S.highlightDir === 'top' ? 'chip-hot' : 'chip-cold';
-    const dirLabel  = S.highlightDir === 'top' ? 'Highest 10' : 'Lowest 10';
-    const varLabel  = VARS[document.getElementById('rank-var').value]?.label || '';
-    const sorted = S.rankedOrder.length ? S.rankedOrder : [...S.selectedMembers].sort((a, b) => a - b);
-
-    bar.className = 'member-bar';
     bar.innerHTML =
-      `<span class="member-bar-label">${dirLabel} by ${varLabel}:</span>` +
-      sorted.map(i => {
-        const isActive  = S.activeMembers.includes(i);
-        const isFocused = S.focusedMember === i;
-        let cls = `member-chip ${chipClass}`;
-        if (!isActive)  cls += ' chip-inactive';
-        if (isFocused)  cls += ' chip-focused';
-        return `<span class="${cls}" onclick="toggleChip(${i})" title="${isActive ? 'Click to hide' : 'Click to show'}">M${i+1}</span>`;
+      '<span class="member-bar-label">' + lbl + ' by ' + vLbl + ':</span>' +
+      ord.map(i => {
+        const isA = S.activeMembers.includes(i);
+        const isF = S.focusedMember === i;
+        let c = 'member-chip ' + cls;
+        if (!isA) c += ' chip-inactive';
+        if (isF)  c += ' chip-focused';
+        return '<span class="' + c + '" onclick="toggleChip(' + i + ')" title="' + (isA ? 'Click to hide' : 'Click to show') + '">M' + (i+1) + '</span>';
       }).join('') +
-      `<span class="member-bar-label" style="margin-left:6px;font-style:italic">
-         · click chips to toggle · click highlighted lines to focus
-       </span>`;
-
-    document.getElementById('hint-text').style.display = 'none';
+      '<span class="member-bar-label" style="margin-left:6px;font-style:italic">· click chips to toggle · hover a line and click to focus</span>';
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Zoom-preserving wrapper
-  //  Saves current x range, runs fn(), restores range after re-render.
-  // ═══════════════════════════════════════════════════════════════════
-
-  function withZoom(fn) {
-    const firstEl = document.getElementById(`chart-${CHART_ORDER[0]}`);
-    const range   = firstEl?._fullLayout?.xaxis?.range
-      ? [...firstEl._fullLayout.xaxis.range] : null;
-    fn(range);
-  }
-
-  function toggleChip(memberIdx) {
-    const pos = S.activeMembers.indexOf(memberIdx);
+  function toggleChip(idx) {
+    const pos = S.activeMembers.indexOf(idx);
     if (pos === -1) {
-      S.activeMembers.push(memberIdx);
+      S.activeMembers.push(idx);
     } else {
       S.activeMembers.splice(pos, 1);
-      if (S.focusedMember === memberIdx) S.focusedMember = null;
+      if (S.focusedMember === idx) { S.focusedMember = null; hideT850(); }
     }
-    withZoom(range => {
+    withZoom(function(range) {
       updateMemberBar();
       renderAll(range);
-      renderT850Panel();
+      if (S.focusedMember !== null) renderT850();
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Percentile helpers
-    const n   = sorted.length;
-    const idx = (p / 100) * (n - 1);
-    const lo  = Math.floor(idx);
-    const hi  = Math.ceil(idx);
-    return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  // ── Zoom helper ───────────────────────────────────────────────────
+
+  function withZoom(fn) {
+    const el  = document.getElementById('chart-' + CHART_ORDER[0]);
+    const rng = el && el._fullLayout && el._fullLayout.xaxis && el._fullLayout.xaxis.range
+      ? el._fullLayout.xaxis.range.slice() : null;
+    fn(rng);
   }
 
-  function buildPercentileSeries(members) {
-    const n     = members[0].length;
-    const p10   = [], p25 = [], p50 = [], p75 = [], p90 = [];
+  // ── Percentile helpers ────────────────────────────────────────────
+
+  function pct(arr, p) {
+    const n = arr.length, idx = p / 100 * (n - 1), lo = Math.floor(idx), hi = Math.ceil(idx);
+    return lo === hi ? arr[lo] : arr[lo] + (arr[hi] - arr[lo]) * (idx - lo);
+  }
+
+  function percentileSeries(members) {
+    const n = members[0].length;
+    const p10=[],p25=[],p50=[],p75=[],p90=[];
     for (let t = 0; t < n; t++) {
-      const vals = members.map(m => m[t]).sort((a, b) => a - b);
-      p10.push(pct(vals, 10));
-      p25.push(pct(vals, 25));
-      p50.push(pct(vals, 50));
-      p75.push(pct(vals, 75));
-      p90.push(pct(vals, 90));
+      const v = members.map(m => m[t]).sort((a,b) => a-b);
+      p10.push(pct(v,10)); p25.push(pct(v,25)); p50.push(pct(v,50));
+      p75.push(pct(v,75)); p90.push(pct(v,90));
     }
-    return { p10, p25, p50, p75, p90 };
+    return {p10,p25,p50,p75,p90};
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Trace builders
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Trace builders ────────────────────────────────────────────────
 
-  function buildDefaultTraces(varData, cfg) {
-    const { times, members, mean } = varData;
-    const { p10, p25, p50, p75, p90 } = buildPercentileSeries(members);
+  function defaultTraces(vd, cfg) {
+    const {times,members,mean} = vd;
+    const {p10,p25,p50,p75,p90} = percentileSeries(members);
     const rev = a => [...a].reverse();
-
     return [
-      // 10–90 band
-      {
-        x: [...times, ...rev(times)],
-        y: [...p90, ...rev(p10)],
-        fill: 'toself', fillcolor: hexAlpha(cfg.color, 0.12),
-        line: { width: 0 }, showlegend: false, hoverinfo: 'skip', type: 'scatter',
-      },
-      // 25–75 band
-      {
-        x: [...times, ...rev(times)],
-        y: [...p75, ...rev(p25)],
-        fill: 'toself', fillcolor: hexAlpha(cfg.color, 0.35),
-        line: { width: 0 }, showlegend: false, hoverinfo: 'skip', type: 'scatter',
-      },
-      // Median
-      {
-        x: times, y: p50, mode: 'lines', type: 'scatter',
-        line: { color: cfg.color, width: 2 },
-        hovertemplate: '%{y:.1f}<extra>Median</extra>', showlegend: false,
-      },
-      // Mean
-      {
-        x: times, y: mean, mode: 'lines', type: 'scatter',
-        line: { color: 'rgba(255,255,255,0.55)', width: 1.5, dash: 'dot' },
-        hovertemplate: '%{y:.1f}<extra>Mean</extra>', showlegend: false,
-      },
+      { x:[...times,...rev(times)], y:[...p90,...rev(p10)], fill:'toself', fillcolor:hexAlpha(cfg.color,.12), line:{width:0}, showlegend:false, hoverinfo:'skip', type:'scatter' },
+      { x:[...times,...rev(times)], y:[...p75,...rev(p25)], fill:'toself', fillcolor:hexAlpha(cfg.color,.35), line:{width:0}, showlegend:false, hoverinfo:'skip', type:'scatter' },
+      { x:times, y:p50, mode:'lines', type:'scatter', line:{color:cfg.color,width:2}, hovertemplate:'%{y:.1f}<extra>Median</extra>', showlegend:false },
+      { x:times, y:mean, mode:'lines', type:'scatter', line:{color:'rgba(255,255,255,.55)',width:1.5,dash:'dot'}, hovertemplate:'%{y:.1f}<extra>Mean</extra>', showlegend:false },
     ];
   }
 
-  function buildMemberTraces(varData, cfg, varKey) {
-    const { times, members, mean } = varData;
+  function memberTraces(vd, cfg) {
+    const {times,members,mean} = vd;
+    const isHot = S.highlightDir === 'top';
     const traces = [];
-    const isHot  = S.highlightDir === 'top';
-
     for (let i = 0; i < 50; i++) {
-      const isActive  = S.activeMembers.includes(i);
-      const isFocus   = S.focusedMember === i && isActive;
-
+      const isA = S.activeMembers.includes(i);
+      const isF = S.focusedMember === i && isA;
       let color, width, opacity, hoverinfo;
-      if (isFocus) {
-        color = FOCUS_COLOR; width = 3.5; opacity = 1; hoverinfo = undefined;
-      } else if (isActive) {
-        color = isHot ? HOT_COLOR : COLD_COLOR; width = 2; opacity = 1; hoverinfo = undefined;
-      } else {
-        color = DIM_COLOR; width = 0.7; opacity = 0.5; hoverinfo = 'skip';
-      }
-
+      if (isF)      { color=FOCUS_COLOR; width=3.5; opacity=1; hoverinfo=undefined; }
+      else if (isA) { color=isHot?HOT_COLOR:COLD_COLOR; width=2; opacity=1; hoverinfo=undefined; }
+      else          { color=DIM_COLOR; width=0.7; opacity=0.5; hoverinfo='skip'; }
       traces.push({
-        x: times, y: members[i],
-        mode: 'lines', type: 'scatter',
-        name: `M${i+1}`,
-        line: { color, width },
-        opacity,
-        showlegend: false,
-        hovertemplate: isActive ? `%{y:.1f}<extra>M${i+1}</extra>` : undefined,
+        x:times, y:members[i], mode:'lines', type:'scatter', name:'M'+(i+1),
+        line:{color,width}, opacity, showlegend:false,
+        hovertemplate: (isA||isF) ? '%{y:.1f}<extra>M'+(i+1)+'</extra>' : undefined,
         hoverinfo,
-        customdata: new Array(times.length).fill(i),
       });
     }
-
-    // Mean on top
-    traces.push({
-      x: times, y: mean, mode: 'lines', type: 'scatter',
-      line: { color: 'rgba(255,255,255,0.7)', width: 2, dash: 'dash' },
-      hovertemplate: '%{y:.1f}<extra>Mean</extra>', showlegend: false,
-    });
-
+    traces.push({ x:times, y:mean, mode:'lines', type:'scatter', line:{color:'rgba(255,255,255,.7)',width:2,dash:'dash'}, hovertemplate:'%{y:.1f}<extra>Mean</extra>', showlegend:false });
     return traces;
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Layout builder
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Plot layout ───────────────────────────────────────────────────
 
-  function makePlotLayout(varKey, isTall, hovermode) {
+  function plotLayout(isTall, hovermode) {
     return {
-      paper_bgcolor: 'rgba(0,0,0,0)',
-      plot_bgcolor:  '#0b1d38',
-      margin: { t: 6, b: 40, l: 52, r: 12 },
-      height: isTall ? 260 : 200,
-      xaxis: {
-        type: 'date',
-        color: '#44607a',
-        gridcolor: '#1e3a5a',
-        gridwidth: 1,
-        tickfont: { size: 10, color: '#7a9ab8' },
-        tickformat: '%a %d',
-        dtick: 86400000,
-        tickangle: 0,
-        linecolor: '#1a2f4a',
-      },
-      yaxis: {
-        color: '#44607a',
-        gridcolor: '#122038',
-        tickfont: { size: 10, color: '#55708a' },
-        zeroline: false,
-        linecolor: '#1a2f4a',
-      },
+      paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'#0b1d38',
+      margin:{t:4,b:38,l:50,r:10},
+      height: isTall ? 250 : 195,
+      xaxis:{ type:'date', color:'#44607a', gridcolor:'#1e3a5a', gridwidth:1, tickfont:{size:10,color:'#7a9ab8'}, tickformat:'%a %d', dtick:86400000, tickangle:0, linecolor:'#1a2f4a' },
+      yaxis:{ color:'#44607a', gridcolor:'#122038', tickfont:{size:10,color:'#55708a'}, zeroline:false, linecolor:'#1a2f4a' },
       hovermode: hovermode || 'x unified',
-      hoverlabel: {
-        bgcolor: '#162944',
-        bordercolor: '#2a4a70',
-        font: { color: '#e8edf5', size: 11 },
-        namelength: 10,
-      },
-      dragmode: 'pan',
+      hoverlabel:{ bgcolor:'#162944', bordercolor:'#2a4a70', font:{color:'#e8edf5',size:11} },
+      dragmode:'pan',
     };
   }
 
-  const PLOTLY_CFG = { responsive: true, displayModeBar: false, scrollZoom: true };
+  const PCFG = { responsive:true, displayModeBar:false, scrollZoom:true };
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Render
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Render all charts ─────────────────────────────────────────────
 
   function renderAll(xrange) {
-    const stationData = S.data.stations[S.station];
-    const isHL        = S.selectedMembers.length > 0;
+    const sd  = S.data.stations[S.station];
+    const isHL = S.selectedMembers.length > 0;
 
-    CHART_ORDER.forEach(varKey => {
-      const divId  = `chart-${varKey}`;
-      const varData = stationData?.[varKey];
-      const cfg     = VARS[varKey];
-      const isFull  = SEASON_LAYOUTS[S.season].some(r => r.length === 1 && r[0] === varKey);
-      const isTall  = !isFull;
+    CHART_ORDER.forEach(vk => {
+      const divId = 'chart-' + vk;
+      const vd    = sd?.[vk];
+      const cfg   = VARS[vk];
+      const isFull = SEASON_LAYOUTS[S.season].some(r => r.length===1 && r[0]===vk);
+      const layout = plotLayout(!isFull, isHL ? 'closest' : 'x unified');
 
-      if (!varData?.times?.length) {
-        Plotly.react(divId, [], makePlotLayout(varKey, isTall), PLOTLY_CFG);
-        return;
-      }
+      if (!vd || !vd.times.length) { Plotly.react(divId, [], layout, PCFG); return; }
 
-      const traces = isHL
-        ? buildMemberTraces(varData, cfg, varKey)
-        : buildDefaultTraces(varData, cfg);
+      const traces = isHL ? memberTraces(vd, cfg) : defaultTraces(vd, cfg);
+      Plotly.react(divId, traces, layout, PCFG);
 
-      const layout = makePlotLayout(varKey, isTall, isHL ? 'closest' : 'x unified');
-      Plotly.react(divId, traces, layout, PLOTLY_CFG);
+      if (xrange) Plotly.relayout(divId, {'xaxis.range': xrange});
 
-      // Restore zoom synchronously — no flash
-      if (xrange) {
-        Plotly.relayout(divId, { 'xaxis.range': xrange });
-      }
-
-      // Axis sync on pan/zoom + crosshair + member hover tracking
       attachAxisSync(divId);
       attachCrosshair(divId);
       attachMemberClick(divId);
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Axis sync (pan/zoom one chart → all charts follow)
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Axis sync ─────────────────────────────────────────────────────
 
   function attachAxisSync(divId) {
     const el = document.getElementById(divId);
-    el.removeAllListeners?.('plotly_relayout');
+    el.removeAllListeners && el.removeAllListeners('plotly_relayout');
     el.on('plotly_relayout', function(ed) {
       if (S.isSyncing) return;
       const r0 = ed['xaxis.range[0]'], r1 = ed['xaxis.range[1]'];
       const auto = ed['xaxis.autorange'];
       if (!r0 && !auto) return;
-
       S.isSyncing = true;
       CHART_ORDER.forEach(vk => {
-        const otherId = `chart-${vk}`;
-        if (otherId === divId) return;
-        Plotly.relayout(otherId, auto
-          ? { 'xaxis.autorange': true }
-          : { 'xaxis.range': [r0, r1] }
-        );
+        if ('chart-'+vk === divId) return;
+        Plotly.relayout('chart-'+vk, auto ? {'xaxis.autorange':true} : {'xaxis.range':[r0,r1]});
       });
       setTimeout(() => { S.isSyncing = false; }, 50);
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Crosshair sync (hover on any chart → vertical line on all)
-  //  Also tracks which member the cursor is over for click detection.
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Crosshair + hover tracking ────────────────────────────────────
 
   function attachCrosshair(divId) {
     const el = document.getElementById(divId);
-    el.removeAllListeners?.('plotly_hover');
-    el.removeAllListeners?.('plotly_unhover');
+    el.removeAllListeners && el.removeAllListeners('plotly_hover');
+    el.removeAllListeners && el.removeAllListeners('plotly_unhover');
 
-    el.on('plotly_hover', function(eventData) {
-      if (!eventData?.points?.length) return;
-      const pt       = eventData.points[0];
-      const x        = pt.x;
-      const curveNum = pt.curveNumber;
-
-      // With hovermode:'closest', curveNumber is the actual line under the cursor
-      S.hoveredMember = (curveNum < 50 && S.activeMembers.includes(curveNum))
-        ? curveNum : null;
-
-      // Pointer cursor when over a clickable member line, crosshair otherwise
+    el.on('plotly_hover', function(ev) {
+      if (!ev || !ev.points || !ev.points.length) return;
+      const pt  = ev.points[0];
+      const x   = pt.x;
+      const cn  = pt.curveNumber;
+      S.hoveredMember = (cn < 50 && S.activeMembers.includes(cn)) ? cn : null;
       const svg = el.querySelector('.main-svg');
       if (svg) svg.style.cursor = S.hoveredMember !== null ? 'pointer' : '';
-
-      // Draw crosshair on all charts
-      CHART_ORDER.forEach(vk => {
-        Plotly.relayout(`chart-${vk}`, {
-          shapes: [{
-            type: 'line', xref: 'x', yref: 'paper',
-            x0: x, x1: x, y0: 0, y1: 1,
-            line: { color: 'rgba(255,255,255,0.25)', width: 1, dash: 'dot' },
-          }]
-        });
-      });
+      CHART_ORDER.forEach(vk => Plotly.relayout('chart-'+vk, { shapes:[{ type:'line', xref:'x', yref:'paper', x0:x,x1:x,y0:0,y1:1, line:{color:'rgba(255,255,255,.25)',width:1,dash:'dot'} }] }));
     });
 
     el.on('plotly_unhover', function() {
       S.hoveredMember = null;
       const svg = el.querySelector('.main-svg');
       if (svg) svg.style.cursor = '';
-      CHART_ORDER.forEach(vk => {
-        Plotly.relayout(`chart-${vk}`, { shapes: [] });
-      });
+      CHART_ORDER.forEach(vk => Plotly.relayout('chart-'+vk, { shapes:[] }));
     });
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Member click — DOM listener using hover-tracked member index
-  //  Bypasses Plotly's unreliable plotly_click on line charts.
-  // ═══════════════════════════════════════════════════════════════════
+  // ── Member click ──────────────────────────────────────────────────
 
   function attachMemberClick(divId) {
     const el = document.getElementById(divId);
-
-    // Remove previous DOM click listener if present
-    if (el._memberClickHandler) {
-      el.removeEventListener('click', el._memberClickHandler);
-    }
-
-    el._memberClickHandler = function() {
+    if (el._mch) el.removeEventListener('click', el._mch);
+    el._mch = function() {
       if (S.hoveredMember === null) return;
       if (!S.activeMembers.includes(S.hoveredMember)) return;
-      S.focusedMember = S.focusedMember === S.hoveredMember ? null : S.hoveredMember;
-      withZoom(range => {
+      const prev = S.focusedMember;
+      S.focusedMember = prev === S.hoveredMember ? null : S.hoveredMember;
+      withZoom(function(range) {
         updateMemberBar();
         renderAll(range);
-        renderT850Panel();
+        if (S.focusedMember !== null) renderT850(); else hideT850();
       });
     };
-
-    el.addEventListener('click', el._memberClickHandler);
+    el.addEventListener('click', el._mch);
   }
 
+  // ── T850 Sidebar ──────────────────────────────────────────────────
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  T850 Sidebar
-  // ═══════════════════════════════════════════════════════════════════
-
-  const T850_CONTEXT = {
-    summer: {
-      tmax:          'T850 is a proxy for the synoptic pattern driving this member\'s surface outcome. A warm T850 anomaly indicates a warm airmass aloft, consistent with a heat event scenario.',
-      apparent_temp: 'T850 is a proxy for the synoptic pattern driving this member\'s apparent temperature. A warm, moist airmass aloft typically correlates with high dewpoint and reduced overnight cooling.',
-      ff100:         'T850 reflects the thermal gradient driving this member\'s wind scenario. Strong horizontal T850 gradients indicate a tight pressure pattern, consistent with elevated wind generation potential.',
-      swrad6:        'T850 alone is a weaker proxy for solar outcomes — cloud cover is more strongly driven by moisture and lifting than by temperature aloft. Use T850 as a broad indicator of airmass character.',
-      tcld:          'T850 alone is a weaker proxy for cloud cover outcomes. Use it as a broad indicator of airmass character rather than a direct cloud signal.',
-      td:            'T850 provides upper-level context for moisture. A warm moist airmass aloft often supports higher dewpoint at the surface, particularly ahead of troughs.',
-      default:       'T850 provides synoptic context for this member\'s scenario. Anomalies from the ensemble mean indicate how different this member\'s upper-level airmass is from the central forecast.',
-    },
-    winter: {
-      tmin:  'T850 is a strong proxy for overnight minimum temperatures. A cold T850 anomaly indicates a deep cold airmass aloft, consistent with elevated heating demand and potential frost risk.',
-      ff100: 'T850 reflects the thermal gradient driving this member\'s wind scenario. Strong horizontal T850 gradients indicate a tight pressure pattern, consistent with elevated wind generation potential.',
-      swrad6:'T850 alone is a weaker proxy for solar outcomes in winter — cloud cover is more strongly driven by frontal activity and moisture than by temperature aloft.',
-      tcld:  'T850 alone is a weaker proxy for cloud cover outcomes. Use it as a broad indicator of airmass character rather than a direct cloud signal.',
-      default: 'T850 provides synoptic context for this member\'s winter scenario. A cold anomaly indicates a deep cold airmass, relevant to both heating demand and frost risk.',
-    },
-  };
-
-  function getT850Context() {
-    const rankVar = document.getElementById('rank-var').value;
-    const season  = S.season;
-    const bank    = T850_CONTEXT[season] || T850_CONTEXT.summer;
-    return bank[rankVar] || bank.default;
+  function hideT850() {
+    document.getElementById('t850-sidebar').classList.remove('visible');
+    document.getElementById('dashboard-body').classList.remove('t850-open');
   }
 
-  function renderT850Panel() {
-    const sidebar = document.getElementById('t850-sidebar');
-    const body    = document.getElementById('dashboard-body');
+  function renderT850() {
+    const t850d = S.data.stations[S.station]?.t850;
+    if (!t850d || S.focusedMember === null) { hideT850(); return; }
 
-    if (S.focusedMember === null) {
-      sidebar.classList.remove('visible');
-      body.classList.remove('t850-open');
-      return;
-    }
+    document.getElementById('t850-sidebar').classList.add('visible');
+    document.getElementById('dashboard-body').classList.add('t850-open');
 
-    const t850Data = S.data.stations[S.station]?.t850;
-    if (!t850Data) {
-      sidebar.classList.remove('visible');
-      body.classList.remove('t850-open');
-      return;
-    }
+    const m    = S.focusedMember;
+    const isHot = S.highlightDir === 'top';
 
-    sidebar.classList.add('visible');
-    body.classList.add('t850-open');
+    document.getElementById('t850-badge').textContent = 'M' + (m+1) + ' focused';
 
-    const m      = S.focusedMember;
-    const isHot  = S.highlightDir === 'top';
-    const times  = t850Data.times;
-
-    // ── Badge ──────────────────────────────────────────────────────
-    document.getElementById('t850-member-badge').textContent = `M${m+1} focused`;
-
-    // ── Plume chart ────────────────────────────────────────────────
+    // Build plume traces
     const traces = [];
-
-    // Dim members
     for (let i = 0; i < 50; i++) {
       if (i === m || S.activeMembers.includes(i)) continue;
-      traces.push({
-        x: times, y: t850Data.members[i],
-        mode: 'lines', type: 'scatter',
-        line: { color: '#1e3554', width: 0.6 },
-        opacity: 0.5, showlegend: false, hoverinfo: 'skip',
-      });
+      traces.push({ x:t850d.times, y:t850d.members[i], mode:'lines', type:'scatter', line:{color:DIM_COLOR,width:0.6}, opacity:0.5, showlegend:false, hoverinfo:'skip' });
     }
-
-    // Active (orange/blue) members
     S.activeMembers.forEach(i => {
       if (i === m) return;
-      traces.push({
-        x: times, y: t850Data.members[i],
-        mode: 'lines', type: 'scatter',
-        line: { color: isHot ? HOT_COLOR : COLD_COLOR, width: 1.5 },
-        opacity: 0.7, showlegend: false,
-        hovertemplate: `%{y:.1f}<extra>M${i+1}</extra>`,
-      });
+      traces.push({ x:t850d.times, y:t850d.members[i], mode:'lines', type:'scatter', line:{color:isHot?HOT_COLOR:COLD_COLOR,width:1.5}, opacity:0.7, showlegend:false, hovertemplate:'%{y:.1f}<extra>M'+(i+1)+'</extra>' });
     });
-
-    // Focused member (gold)
-    traces.push({
-      x: times, y: t850Data.members[m],
-      mode: 'lines', type: 'scatter',
-      line: { color: FOCUS_COLOR, width: 2.5 },
-      showlegend: false,
-      hovertemplate: `%{y:.1f}<extra>M${m+1}</extra>`,
-    });
+    traces.push({ x:t850d.times, y:t850d.members[m], mode:'lines', type:'scatter', line:{color:FOCUS_COLOR,width:2.5}, showlegend:false, hovertemplate:'%{y:.1f}<extra>M'+(m+1)+'</extra>' });
 
     const layout = {
-      paper_bgcolor: 'rgba(0,0,0,0)',
-      plot_bgcolor:  '#0b1d38',
-      margin: { t: 4, b: 36, l: 42, r: 8 },
-      height: 185,
-      xaxis: {
-        type: 'date', color: '#44607a', gridcolor: '#1e3a5a',
-        tickfont: { size: 9, color: '#55708a' },
-        tickformat: '%a %d', dtick: 86400000, linecolor: '#1a2f4a',
-      },
-      yaxis: {
-        color: '#44607a', gridcolor: '#122038',
-        tickfont: { size: 9, color: '#55708a' },
-        zeroline: false, linecolor: '#1a2f4a',
-        title: { text: '°C', font: { size: 9, color: '#55708a' }, standoff: 4 },
-      },
-      hovermode: 'closest',
-      hoverlabel: { bgcolor: '#162944', bordercolor: '#2a4a70', font: { color: '#e8edf5', size: 10 } },
-      dragmode: false,
+      paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'#0b1d38',
+      margin:{t:4,b:36,l:42,r:8}, height:185,
+      xaxis:{ type:'date', color:'#44607a', gridcolor:'#1e3a5a', tickfont:{size:9,color:'#55708a'}, tickformat:'%a %d', dtick:86400000, linecolor:'#1a2f4a' },
+      yaxis:{ color:'#44607a', gridcolor:'#122038', tickfont:{size:9,color:'#55708a'}, zeroline:false, linecolor:'#1a2f4a', title:{text:'°C',font:{size:9,color:'#55708a'},standoff:4} },
+      hovermode:'closest',
+      hoverlabel:{ bgcolor:'#162944', bordercolor:'#2a4a70', font:{color:'#e8edf5',size:10} },
+      dragmode:false,
     };
+    Plotly.react('chart-t850', traces, layout, {responsive:true,displayModeBar:false,scrollZoom:false});
 
-    Plotly.react('chart-t850-panel', traces, layout,
-      { responsive: true, displayModeBar: false, scrollZoom: false });
-
-    // ── Stats at selected timestep ─────────────────────────────────
-    const timeIdx  = parseInt(document.getElementById('time-select').value);
-
-    // t850 timestep may differ from rank-var timestep — find nearest
-    const rankVar     = document.getElementById('rank-var').value;
-    const rankVarData = S.data.stations[S.station]?.[rankVar];
-    const rankTime    = rankVarData?.times?.[timeIdx];
-
-    let t850Idx = 0;
-    if (rankTime) {
-      let bestDiff = Infinity;
-      times.forEach((t, i) => {
-        const diff = Math.abs(new Date(t) - new Date(rankTime));
-        if (diff < bestDiff) { bestDiff = diff; t850Idx = i; }
-      });
+    // Stats at selected timestep
+    const vk    = document.getElementById('rank-var').value;
+    const tIdx  = parseInt(document.getElementById('time-select').value);
+    const rankVd = S.data.stations[S.station]?.[vk];
+    const rankT  = rankVd?.times?.[tIdx];
+    let t850Idx  = 0;
+    if (rankT) {
+      let best = Infinity;
+      t850d.times.forEach((t,i) => { const d = Math.abs(new Date(t)-new Date(rankT)); if(d<best){best=d;t850Idx=i;} });
     }
 
-    const allValsAtT = t850Data.members.map(s => s[t850Idx]);
-    const focusedVal = t850Data.members[m][t850Idx];
-    const meanVal    = allValsAtT.reduce((a, b) => a + b, 0) / 50;
-    const anomaly    = focusedVal - meanVal;
-    const rank       = allValsAtT.filter(v => v < focusedVal).length + 1;
+    const allV   = t850d.members.map(s => s[t850Idx]);
+    const focV   = t850d.members[m][t850Idx];
+    const meanV  = allV.reduce((a,b) => a+b, 0) / 50;
+    const anom   = focV - meanV;
+    const rank   = allV.filter(v => v < focV).length + 1;
+    const tLabel = fmtTime(t850d.times[t850Idx], t850d.times[0]);
+    const anomCls = anom > 1 ? 'stat-hot' : anom < -1 ? 'stat-cold' : '';
+    const rkCls   = rank <= 5 ? 'stat-hot' : rank >= 46 ? 'stat-cold' : '';
+    const sign    = anom >= 0 ? '+' : '';
 
-    const timeLabel  = t850Data.times[t850Idx]
-      ? formatTimeLabel(t850Data.times[t850Idx], t850Data.times[0])
-      : '–';
+    document.getElementById('t850-stats').innerHTML =
+      '<div class="t850-stats-title">M'+(m+1)+' at '+tLabel+'</div>' +
+      '<div class="stat-row"><span class="stat-label">T850</span><span class="stat-val stat-gold">'+focV.toFixed(1)+'°C</span></div>' +
+      '<div class="stat-row"><span class="stat-label">Ensemble mean</span><span class="stat-val">'+meanV.toFixed(1)+'°C</span></div>' +
+      '<div class="stat-row"><span class="stat-label">Anomaly</span><span class="stat-val '+anomCls+'">'+sign+anom.toFixed(1)+'°C</span></div>' +
+      '<div class="stat-row"><span class="stat-label">T850 rank (of 50)</span><span class="stat-val '+rkCls+'">'+rank+ordinal(rank)+' warmest</span></div>';
 
-    const anomSign   = anomaly >= 0 ? '+' : '';
-    const anomClass  = anomaly > 1 ? 'hot' : anomaly < -1 ? 'cold' : '';
-    const rankClass  = rank <= 5 ? 'hot' : rank >= 46 ? 'cold' : '';
-
-    document.getElementById('t850-stats').innerHTML = `
-      <div class="t850-stats-title">M${m+1} at ${timeLabel}</div>
-      <div class="stat-row">
-        <span class="stat-label">T850</span>
-        <span class="stat-val gold">${focusedVal.toFixed(1)}°C</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Ensemble mean</span>
-        <span class="stat-val">${meanVal.toFixed(1)}°C</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Anomaly</span>
-        <span class="stat-val ${anomClass}">${anomSign}${anomaly.toFixed(1)}°C</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">T850 rank (of 50)</span>
-        <span class="stat-val ${rankClass}">${rank}${ordinal(rank)}</span>
-      </div>
-    `;
-
-    // ── Context text ───────────────────────────────────────────────
-    document.getElementById('t850-context').textContent = getT850Context();
+    const bank = T850_TEXT[S.season] || T850_TEXT.summer;
+    document.getElementById('t850-context').textContent = bank[vk] || FALLBACK_T850;
   }
 
   function ordinal(n) {
-    const s = ['th','st','nd','rd'];
-    const v = n % 100;
-    return s[(v - 20) % 10] || s[v] || s[0];
+    const s = ['th','st','nd','rd'], v = n % 100;
+    return s[(v-20)%10] || s[v] || s[0];
   }
 
+  // ── Utilities ─────────────────────────────────────────────────────
 
-    const r = parseInt(hex.slice(1,3), 16);
-    const g = parseInt(hex.slice(3,5), 16);
-    const b = parseInt(hex.slice(5,7), 16);
-    return `rgba(${r},${g},${b},${a})`;
+  function hexAlpha(hex, a) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return 'rgba('+r+','+g+','+b+','+a+')';
   }
 
   function showError(err) {
-    document.getElementById('charts-outer').innerHTML = `
-      <div class="error-box">
-        <h3>Could not load ensemble data</h3>
-        <p style="margin-bottom:12px">${err}</p>
-        <p>Make sure you have run <code>python wrangle.py &lt;csv_folder&gt;</code>
-           and that <code>data/ensemble_data.json</code> exists next to this HTML file.</p>
-        <p style="margin-top:12px">To view locally, run a simple server:<br>
-           <code>python -m http.server 8000</code><br>
-           then open <code>http://localhost:8000</code> in your browser.</p>
-      </div>`;
+    document.getElementById('charts-outer').innerHTML =
+      '<div class="error-box"><h3>Could not load ensemble data</h3><p style="margin-bottom:12px">'+err+'</p>' +
+      '<p>Run <code>python wrangle.py</code> then make sure <code>data/ensemble_data.json</code> is in the repo.</p>' +
+      '<p style="margin-top:12px">To test locally: <code>python -m http.server 8000</code> then open <code>http://localhost:8000</code></p></div>';
   }
 
-  // ═══════════════════════════════════════════════════════════════════
-  //  Boot
-  // ═══════════════════════════════════════════════════════════════════
   document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
