@@ -583,16 +583,7 @@
     const firstEl = document.getElementById(`chart-${CHART_ORDER[0]}`);
     const range   = firstEl?._fullLayout?.xaxis?.range
       ? [...firstEl._fullLayout.xaxis.range] : null;
-    fn();
-    if (range) {
-      setTimeout(() => {
-        S.isSyncing = true;
-        CHART_ORDER.forEach(vk =>
-          Plotly.relayout(`chart-${vk}`, { 'xaxis.range': range })
-        );
-        setTimeout(() => { S.isSyncing = false; }, 50);
-      }, 20);
-    }
+    fn(range);
   }
 
   function toggleChip(memberIdx) {
@@ -603,9 +594,9 @@
       S.activeMembers.splice(pos, 1);
       if (S.focusedMember === memberIdx) S.focusedMember = null;
     }
-    withZoom(() => {
+    withZoom(range => {
       updateMemberBar();
-      renderAll();
+      renderAll(range);
     });
   }
 
@@ -760,7 +751,7 @@
   //  Render
   // ═══════════════════════════════════════════════════════════════════
 
-  function renderAll() {
+  function renderAll(xrange) {
     const stationData = S.data.stations[S.station];
     const isHL        = S.selectedMembers.length > 0;
 
@@ -781,6 +772,11 @@
 
       const layout = makePlotLayout(varKey, isTall, isHL ? 'closest' : 'x unified');
       Plotly.react(divId, traces, layout, PLOTLY_CFG);
+
+      // Restore zoom synchronously — no flash
+      if (xrange) {
+        Plotly.relayout(divId, { 'xaxis.range': xrange });
+      }
 
       // Axis sync on pan/zoom + crosshair + member hover tracking
       attachAxisSync(divId);
@@ -878,9 +874,9 @@
       if (S.hoveredMember === null) return;
       if (!S.activeMembers.includes(S.hoveredMember)) return;
       S.focusedMember = S.focusedMember === S.hoveredMember ? null : S.hoveredMember;
-      withZoom(() => {
+      withZoom(range => {
         updateMemberBar();
-        renderAll();
+        renderAll(range);
       });
     };
 
