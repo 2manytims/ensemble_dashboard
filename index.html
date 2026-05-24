@@ -574,6 +574,27 @@
     document.getElementById('hint-text').style.display = 'none';
   }
 
+  // ═══════════════════════════════════════════════════════════════════
+  //  Zoom-preserving wrapper
+  //  Saves current x range, runs fn(), restores range after re-render.
+  // ═══════════════════════════════════════════════════════════════════
+
+  function withZoom(fn) {
+    const firstEl = document.getElementById(`chart-${CHART_ORDER[0]}`);
+    const range   = firstEl?._fullLayout?.xaxis?.range
+      ? [...firstEl._fullLayout.xaxis.range] : null;
+    fn();
+    if (range) {
+      setTimeout(() => {
+        S.isSyncing = true;
+        CHART_ORDER.forEach(vk =>
+          Plotly.relayout(`chart-${vk}`, { 'xaxis.range': range })
+        );
+        setTimeout(() => { S.isSyncing = false; }, 50);
+      }, 20);
+    }
+  }
+
   function toggleChip(memberIdx) {
     const pos = S.activeMembers.indexOf(memberIdx);
     if (pos === -1) {
@@ -582,8 +603,10 @@
       S.activeMembers.splice(pos, 1);
       if (S.focusedMember === memberIdx) S.focusedMember = null;
     }
-    updateMemberBar();
-    renderAll();
+    withZoom(() => {
+      updateMemberBar();
+      renderAll();
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════
@@ -849,8 +872,10 @@
       if (S.hoveredMember === null) return;
       if (!S.activeMembers.includes(S.hoveredMember)) return;
       S.focusedMember = S.focusedMember === S.hoveredMember ? null : S.hoveredMember;
-      updateMemberBar();
-      renderAll();
+      withZoom(() => {
+        updateMemberBar();
+        renderAll();
+      });
     };
 
     el.addEventListener('click', el._memberClickHandler);
