@@ -250,6 +250,7 @@
     focusedMember:   null,
     hoveredMember:   null,
     zoomRange:       null,
+    zoomSnapshot:    null,  // range captured at hover time, before click event fires
     isSyncing:       false,
   };
 
@@ -356,6 +357,7 @@
     S.focusedMember   = null;
     S.hoveredMember   = null;
     S.zoomRange       = null;
+    S.zoomSnapshot    = null;
     updateMemberBar();
     hideT850();
   }
@@ -470,7 +472,7 @@
 
   function withZoom(fn) {
     saveZoom();
-    fn(S.zoomRange || null);
+    fn(S.zoomSnapshot || S.zoomRange || null);
   }
 
   // ── Percentile helpers ────────────────────────────────────────────
@@ -604,13 +606,21 @@
       const x   = pt.x;
       const cn  = pt.curveNumber;
       S.hoveredMember = (cn < 50 && S.activeMembers.includes(cn)) ? cn : null;
+
+      // Snapshot the zoom range NOW — before any click event can corrupt it
+      if (S.hoveredMember !== null) {
+        const firstEl = document.getElementById('chart-' + CHART_ORDER[0]);
+        S.zoomSnapshot = (firstEl && firstEl._fullLayout && firstEl._fullLayout.xaxis && firstEl._fullLayout.xaxis.range)
+          ? firstEl._fullLayout.xaxis.range.slice() : S.zoomRange;
+      }
       const svg = el.querySelector('.main-svg');
       if (svg) svg.style.cursor = S.hoveredMember !== null ? 'pointer' : '';
       CHART_ORDER.forEach(vk => Plotly.relayout('chart-'+vk, { shapes:[{ type:'line', xref:'x', yref:'paper', x0:x,x1:x,y0:0,y1:1, line:{color:'rgba(255,255,255,.25)',width:1,dash:'dot'} }] }));
     });
 
     el.on('plotly_unhover', function() {
-      S.hoveredMember = null;
+      S.hoveredMember  = null;
+      S.zoomSnapshot   = null;
       const svg = el.querySelector('.main-svg');
       if (svg) svg.style.cursor = '';
       CHART_ORDER.forEach(vk => Plotly.relayout('chart-'+vk, { shapes:[] }));
