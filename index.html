@@ -501,6 +501,8 @@
 
   // ═══ Axis sync ════════════════════════════════════════════════════
 
+  let syncTimer = null;
+
   function attachSync(divId) {
     const el=document.getElementById(divId);
     el.removeAllListeners&&el.removeAllListeners('plotly_relayout');
@@ -510,12 +512,16 @@
       if (r0&&r1) S.savedRange=[r0,r1];
       if (auto)   S.savedRange=null;
       if (!r0&&!auto) return;
-      S.isSyncing=true;
-      CHART_ORDER.forEach(vk=>{
-        if('chart-'+vk===divId)return;
-        Plotly.relayout('chart-'+vk, auto?{'xaxis.autorange':true}:{'xaxis.range':[r0,r1]});
-      });
-      setTimeout(()=>{S.isSyncing=false;},60);
+      // Debounce: wait for scroll to settle before syncing other charts
+      clearTimeout(syncTimer);
+      syncTimer=setTimeout(()=>{
+        S.isSyncing=true;
+        CHART_ORDER.forEach(vk=>{
+          if('chart-'+vk===divId)return;
+          Plotly.relayout('chart-'+vk, auto?{'xaxis.autorange':true}:{'xaxis.range':[r0,r1]});
+        });
+        setTimeout(()=>{S.isSyncing=false;},30);
+      },50);
     });
   }
 
@@ -532,6 +538,7 @@
       S.hoveredMember=(cn<50&&S.activeMembers.includes(cn))?cn:null;
       const svg=el.querySelector('.main-svg');
       if (svg) svg.style.cursor=S.hoveredMember!==null?'pointer':'';
+      if (S.isSyncing) return;  // skip crosshair during zoom sync
       CHART_ORDER.forEach(vk=>Plotly.relayout('chart-'+vk,{shapes:[{
         type:'line',xref:'x',yref:'paper',x0:x,x1:x,y0:0,y1:1,
         line:{color:'rgba(255,255,255,.25)',width:1,dash:'dot'}
