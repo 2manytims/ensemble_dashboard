@@ -268,6 +268,13 @@
     </div>
     <span class="header-title">EC Ensemble Dashboard</span>
     <div class="run-badge">Run: <span id="run-label">…</span></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Season</span>
+      <select id="season-select" onchange="setSeason(this.value)" style="font-size:12px;padding:4px 10px">
+        <option value="summer">☀ Summer</option>
+        <option value="winter">❄ Winter</option>
+      </select>
+    </div>
   </header>
 
   <!-- Station Tabs -->
@@ -280,6 +287,8 @@
       <span class="ctrl-label">Rank by</span>
       <select id="rank-var">
         <option value="tmax">Max Temperature</option>
+        <option value="tmin">Min Temperature</option>
+        <option value="apparent_temp">Apparent Temperature</option>
         <option value="ff100">100m Wind Speed</option>
         <option value="swrad6">Solar Radiation</option>
         <option value="tcld">Cloud Cover</option>
@@ -316,14 +325,30 @@
   // ═══════════════════════════════════════════════════════════════════
 
   const VARS = {
-    tmax:   { label: 'Max Temperature', unit: '°C',   color: '#e06c75' },
-    ff100:  { label: '100m Wind Speed', unit: 'm/s',  color: '#61afef' },
-    swrad6: { label: 'Solar Radiation', unit: 'W/m²', color: '#e5c07b' },
-    tcld:   { label: 'Cloud Cover',     unit: '%',    color: '#98c379' },
-    td:     { label: 'Dew Point',       unit: '°C',   color: '#56b6c2' },
+    tmax:          { label: 'Max Temperature',      unit: '°C',   color: '#e06c75' },
+    tmin:          { label: 'Min Temperature',      unit: '°C',   color: '#4FC3F7' },
+    apparent_temp: { label: 'Apparent Temperature', unit: '°C',   color: '#c678dd' },
+    td:            { label: 'Dew Point',            unit: '°C',   color: '#56b6c2' },
+    ff100:         { label: '100m Wind Speed',      unit: 'm/s',  color: '#61afef' },
+    swrad6:        { label: 'Solar Radiation',      unit: 'W/m²', color: '#e5c07b' },
+    tcld:          { label: 'Cloud Cover',          unit: '%',    color: '#98c379' },
   };
 
-  const CHART_ORDER = ['tmax', 'ff100', 'swrad6', 'tcld', 'td'];
+  // Season layouts: each entry is array of rows, each row is array of varKeys
+  const SEASON_LAYOUTS = {
+    summer: [
+      ['tmax', 'apparent_temp'],
+      ['ff100', 'swrad6'],
+      ['tcld'],
+    ],
+    winter: [
+      ['tmin', 'ff100'],
+      ['swrad6', 'tcld'],
+    ],
+  };
+
+  // Flat ordered list of vars for the current season (set on season change)
+  let CHART_ORDER = ['tmax', 'apparent_temp', 'ff100', 'swrad6', 'tcld'];
 
   const HOT_COLOR   = '#FF6B35';
   const COLD_COLOR  = '#4FC3F7';
@@ -337,12 +362,13 @@
   const S = {
     data:            null,
     station:         null,
-    selectedMembers: [],   // all 10 members from tail selection
-    activeMembers:   [],   // subset currently toggled on via chips
-    rankedOrder:     [],   // selectedMembers ordered by value (best → worst)
+    season:          'summer',
+    selectedMembers: [],
+    activeMembers:   [],
+    rankedOrder:     [],
     highlightDir:    'top',
     focusedMember:   null,
-    hoveredMember:   null, // member index currently under cursor
+    hoveredMember:   null,
     isSyncing:       false,
   };
 
@@ -397,14 +423,11 @@
     const outer = document.getElementById('charts-outer');
     outer.innerHTML = '';
 
-    // Row 1: tmax + ff100
-    // Row 2: swrad6 + tcld
-    // Row 3: td (full width, shorter)
-    const rows = [
-      ['tmax', 'ff100'],
-      ['swrad6', 'tcld'],
-      ['td'],
-    ];
+    const rows = SEASON_LAYOUTS[S.season];
+
+    // Update CHART_ORDER to match current season's flat variable list
+    CHART_ORDER.length = 0;
+    rows.forEach(row => row.forEach(vk => CHART_ORDER.push(vk)));
 
     rows.forEach(row => {
       const rowEl = document.createElement('div');
@@ -469,6 +492,23 @@
 
     populateTimeSelect();
     updateMemberBar();
+    renderAll();
+  }
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  Season switching
+  // ═══════════════════════════════════════════════════════════════════
+
+  function setSeason(season) {
+    S.season         = season;
+    S.selectedMembers = [];
+    S.activeMembers  = [];
+    S.rankedOrder    = [];
+    S.focusedMember  = null;
+    S.hoveredMember  = null;
+    clearHighlight(true);
+    buildChartLayout();
+    populateTimeSelect();
     renderAll();
   }
 
@@ -539,14 +579,14 @@
     renderAll();
   }
 
-  function clearHighlight() {
+  function clearHighlight(silent) {
     S.selectedMembers = [];
     S.activeMembers   = [];
     S.rankedOrder     = [];
     S.focusedMember   = null;
     S.hoveredMember   = null;
     updateMemberBar();
-    renderAll();
+    if (!silent) renderAll();
   }
 
   function updateMemberBar() {
@@ -766,7 +806,8 @@
       const divId  = `chart-${varKey}`;
       const varData = stationData?.[varKey];
       const cfg     = VARS[varKey];
-      const isTall  = varKey !== 'td';
+      const isFull  = SEASON_LAYOUTS[S.season].some(r => r.length === 1 && r[0] === varKey);
+      const isTall  = !isFull;
 
       if (!varData?.times?.length) {
         Plotly.react(divId, [], makePlotLayout(varKey, isTall), PLOTLY_CFG);
