@@ -69,40 +69,33 @@
     .chip-focused { box-shadow: 0 0 0 2px var(--focus); }
 
     /* Dashboard body */
-    .dashboard-body { display: grid; grid-template-columns: 1fr; }
-    .dashboard-body.t850-open { grid-template-columns: 1fr 310px; }
-
-    /* Charts */
     .charts-outer { padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .charts-row.full { grid-template-columns: 1fr; }
-    .chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-    .chart-card-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 5px; border-bottom: 1px solid var(--border); }
-    .chart-card-title { font-size: 12px; font-weight: 600; }
-    .chart-unit { font-size: 11px; color: var(--text2); }
-    .chart-legend { display: flex; align-items: center; gap: 10px; }
-    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text2); }
-    .legend-swatch { width: 14px; height: 8px; border-radius: 2px; }
-    .legend-line { width: 16px; height: 2px; border-radius: 1px; }
-    .chart-div { width: 100%; }
 
-    /* T850 Sidebar */
-    .t850-sidebar { display: none; flex-direction: column; background: var(--bg2); border-left: 1px solid var(--border); min-width: 0; }
-    .t850-sidebar.visible { display: flex; }
-    .t850-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-    .t850-title { font-size: 12px; font-weight: 600; color: var(--text); }
-    .t850-sub   { font-size: 10px; color: var(--text2); margin-top: 2px; }
-    .t850-badge { font-size: 10px; background: rgba(255,215,0,.15); color: var(--focus); border: 1px solid rgba(255,215,0,.4); border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
-    .t850-chart-wrap { padding: 8px 8px 0; }
-    .t850-stats { display: flex; flex-direction: column; gap: 5px; padding: 10px 14px; border-top: 1px solid var(--border); }
+    /* T850 Modal */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+    .modal-overlay.visible { display: flex; }
+    .modal-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; }
+    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+    .modal-title { font-size: 14px; font-weight: 600; color: var(--text); }
+    .modal-sub   { font-size: 11px; color: var(--text2); margin-top: 3px; }
+    .modal-close { background: var(--bg4); border: 1px solid var(--border); color: var(--text2); border-radius: 5px; padding: 4px 10px; font-size: 13px; cursor: pointer; }
+    .modal-close:hover { color: var(--text); }
+    .modal-body  { display: grid; grid-template-columns: 1fr 220px; overflow: hidden; }
+    .modal-chart-wrap { padding: 12px 12px 12px 16px; border-right: 1px solid var(--border); }
+    .modal-side  { display: flex; flex-direction: column; overflow-y: auto; }
+    .t850-stats  { display: flex; flex-direction: column; gap: 6px; padding: 14px; border-bottom: 1px solid var(--border); }
     .t850-stats-title { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text2); margin-bottom: 3px; }
-    .stat-row { display: flex; justify-content: space-between; align-items: center; }
-    .stat-label { font-size: 11px; color: var(--text2); }
-    .stat-val   { font-size: 11px; font-weight: 600; color: var(--text); }
-    .stat-hot   { color: var(--hot); }
-    .stat-cold  { color: var(--cold); }
-    .stat-gold  { color: var(--focus); }
-    .t850-context { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 10px; color: var(--text2); line-height: 1.6; }
+    .stat-row    { display: flex; justify-content: space-between; align-items: center; }
+    .stat-label  { font-size: 11px; color: var(--text2); }
+    .stat-val    { font-size: 11px; font-weight: 600; color: var(--text); }
+    .stat-hot    { color: var(--hot); }
+    .stat-cold   { color: var(--cold); }
+    .stat-gold   { color: var(--focus); }
+    .t850-context { padding: 12px 14px; font-size: 11px; color: var(--text2); line-height: 1.6; }
+
+    /* T850 button in member bar */
+    .btn-t850 { padding: 4px 12px; border: 1px solid rgba(255,215,0,.4); border-radius: 5px; background: rgba(255,215,0,.1); color: var(--focus); font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; transition: background .15s; }
+    .btn-t850:hover { background: rgba(255,215,0,.2); }
 
     /* Footer */
     footer { display: flex; justify-content: space-between; padding: 10px 24px; background: var(--bg2); border-top: 1px solid var(--border); font-size: 11px; color: var(--text2); }
@@ -159,21 +152,27 @@
     </div>
   </div>
 
-  <div class="dashboard-body" id="dashboard-body">
-    <div class="charts-outer" id="charts-outer">
-      <div class="loading">Loading ensemble data…</div>
-    </div>
-    <div class="t850-sidebar" id="t850-sidebar">
-      <div class="t850-header">
+  <div class="charts-outer" id="charts-outer">
+    <div class="loading">Loading ensemble data…</div>
+  </div>
+
+  <!-- T850 Modal -->
+  <div class="modal-overlay" id="t850-overlay" onclick="closeT850Modal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
         <div>
-          <div class="t850-title">850 hPa Temperature</div>
-          <div class="t850-sub">Synoptic proxy · focused member</div>
+          <div class="modal-title">850 hPa Temperature — <span id="t850-modal-member">–</span></div>
+          <div class="modal-sub">Synoptic proxy · focused member · <span id="t850-modal-station">–</span></div>
         </div>
-        <div class="t850-badge" id="t850-badge">–</div>
+        <button class="modal-close" onclick="closeT850Modal()">✕</button>
       </div>
-      <div class="t850-chart-wrap"><div id="chart-t850"></div></div>
-      <div class="t850-stats"   id="t850-stats"></div>
-      <div class="t850-context" id="t850-context"></div>
+      <div class="modal-body">
+        <div class="modal-chart-wrap"><div id="chart-t850"></div></div>
+        <div class="modal-side">
+          <div class="t850-stats"   id="t850-stats"></div>
+          <div class="t850-context" id="t850-context"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -428,7 +427,8 @@
         if (isF)  c += ' chip-focused';
         return '<span class="' + c + '" onclick="toggleChip(' + i + ')" title="' + (isA ? 'Click to hide' : 'Click to show') + '">M' + (i+1) + '</span>';
       }).join('') +
-      '<span class="member-bar-label" style="margin-left:6px;font-style:italic">· click chips to toggle · hover a line and click to focus</span>';
+      '<span class="member-bar-label" style="margin-left:6px;font-style:italic">· click chips to toggle · hover a line and click to focus</span>' +
+      (S.focusedMember !== null ? '<button class="btn-t850" onclick="openT850Modal()" style="margin-left:10px">◈ View 850 hPa Temp</button>' : '');
   }
 
   function toggleChip(idx) {
@@ -442,7 +442,6 @@
     withZoom(function(range) {
       updateMemberBar();
       renderAll(range);
-      if (S.focusedMember !== null) renderT850();
     });
   }
 
@@ -610,32 +609,25 @@
       withZoom(function(range) {
         updateMemberBar();
         renderAll(range);
-        if (S.focusedMember !== null) renderT850(); else hideT850();
       });
     };
     el.addEventListener('click', el._mch);
   }
 
-  // ── T850 Sidebar ──────────────────────────────────────────────────
+  // ── T850 Modal ────────────────────────────────────────────────────
 
-  function hideT850() {
-    document.getElementById('t850-sidebar').classList.remove('visible');
-    document.getElementById('dashboard-body').classList.remove('t850-open');
-  }
-
-  function renderT850() {
+  function openT850Modal() {
     const t850d = S.data.stations[S.station]?.t850;
-    if (!t850d || S.focusedMember === null) { hideT850(); return; }
+    if (!t850d || S.focusedMember === null) return;
 
-    document.getElementById('t850-sidebar').classList.add('visible');
-    document.getElementById('dashboard-body').classList.add('t850-open');
-
-    const m    = S.focusedMember;
+    const m     = S.focusedMember;
     const isHot = S.highlightDir === 'top';
 
-    document.getElementById('t850-badge').textContent = 'M' + (m+1) + ' focused';
+    document.getElementById('t850-modal-member').textContent  = 'M' + (m+1);
+    document.getElementById('t850-modal-station').textContent = S.station;
+    document.getElementById('t850-overlay').classList.add('visible');
 
-    // Build plume traces
+    // Plume traces
     const traces = [];
     for (let i = 0; i < 50; i++) {
       if (i === m || S.activeMembers.includes(i)) continue;
@@ -649,16 +641,16 @@
 
     const layout = {
       paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'#0b1d38',
-      margin:{t:4,b:36,l:42,r:8}, height:185,
-      xaxis:{ type:'date', color:'#44607a', gridcolor:'#1e3a5a', tickfont:{size:9,color:'#55708a'}, tickformat:'%a %d', dtick:86400000, linecolor:'#1a2f4a' },
-      yaxis:{ color:'#44607a', gridcolor:'#122038', tickfont:{size:9,color:'#55708a'}, zeroline:false, linecolor:'#1a2f4a', title:{text:'°C',font:{size:9,color:'#55708a'},standoff:4} },
+      margin:{t:6,b:40,l:50,r:14}, height:320,
+      xaxis:{ type:'date', color:'#44607a', gridcolor:'#1e3a5a', tickfont:{size:10,color:'#7a9ab8'}, tickformat:'%a %d', dtick:86400000, linecolor:'#1a2f4a' },
+      yaxis:{ color:'#44607a', gridcolor:'#122038', tickfont:{size:10,color:'#55708a'}, zeroline:false, linecolor:'#1a2f4a', title:{text:'°C',font:{size:10,color:'#55708a'},standoff:4} },
       hovermode:'closest',
-      hoverlabel:{ bgcolor:'#162944', bordercolor:'#2a4a70', font:{color:'#e8edf5',size:10} },
-      dragmode:false,
+      hoverlabel:{ bgcolor:'#162944', bordercolor:'#2a4a70', font:{color:'#e8edf5',size:11} },
+      dragmode:'pan',
     };
-    Plotly.react('chart-t850', traces, layout, {responsive:true,displayModeBar:false,scrollZoom:false});
+    Plotly.react('chart-t850', traces, layout, {responsive:true,displayModeBar:false,scrollZoom:true});
 
-    // Stats at selected timestep
+    // Stats
     const vk    = document.getElementById('rank-var').value;
     const tIdx  = parseInt(document.getElementById('time-select').value);
     const rankVd = S.data.stations[S.station]?.[vk];
@@ -668,10 +660,9 @@
       let best = Infinity;
       t850d.times.forEach((t,i) => { const d = Math.abs(new Date(t)-new Date(rankT)); if(d<best){best=d;t850Idx=i;} });
     }
-
     const allV   = t850d.members.map(s => s[t850Idx]);
     const focV   = t850d.members[m][t850Idx];
-    const meanV  = allV.reduce((a,b) => a+b, 0) / 50;
+    const meanV  = allV.reduce((a,b) => a+b,0) / 50;
     const anom   = focV - meanV;
     const rank   = allV.filter(v => v < focV).length + 1;
     const tLabel = fmtTime(t850d.times[t850Idx], t850d.times[0]);
@@ -688,6 +679,14 @@
 
     const bank = T850_TEXT[S.season] || T850_TEXT.summer;
     document.getElementById('t850-context').textContent = bank[vk] || FALLBACK_T850;
+  }
+
+  function closeT850Modal() {
+    document.getElementById('t850-overlay').classList.remove('visible');
+  }
+
+  function hideT850() {
+    closeT850Modal();
   }
 
   function ordinal(n) {
@@ -710,6 +709,7 @@
   }
 
   document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeT850Modal(); });
   </script>
 </body>
 </html>
