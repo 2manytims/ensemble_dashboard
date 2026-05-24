@@ -70,6 +70,17 @@
 
     /* Dashboard body */
     .charts-outer { padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .charts-row.full { grid-template-columns: 1fr; }
+    .chart-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .chart-card-header { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px 5px; border-bottom: 1px solid var(--border); }
+    .chart-card-title { font-size: 12px; font-weight: 600; }
+    .chart-unit { font-size: 11px; color: var(--text2); }
+    .chart-legend { display: flex; align-items: center; gap: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text2); }
+    .legend-swatch { width: 14px; height: 8px; border-radius: 2px; }
+    .legend-line { width: 16px; height: 2px; border-radius: 1px; }
+    .chart-div { width: 100%; }
 
     /* T850 Modal */
     .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
