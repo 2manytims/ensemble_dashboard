@@ -44,6 +44,7 @@ VARIABLES = {
     "swrad6": {"label": "Solar Radiation",  "unit": "W/m²"},
     "tcld":   {"label": "Cloud Cover",      "unit": "%"},
     "td":     {"label": "Dew Point",        "unit": "°C"},
+    "t850":   {"label": "850 hPa Temp",     "unit": "°C"},
 }
 
 SWRAD6_PERIOD_SEC = 6 * 3600  # J/m² → W/m²
