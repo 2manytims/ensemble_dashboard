@@ -835,6 +835,10 @@
       S.hoveredMember = (curveNum < 50 && S.activeMembers.includes(curveNum))
         ? curveNum : null;
 
+      // Pointer cursor when over a clickable member line, crosshair otherwise
+      const svg = el.querySelector('.main-svg');
+      if (svg) svg.style.cursor = S.hoveredMember !== null ? 'pointer' : '';
+
       // Draw crosshair on all charts
       CHART_ORDER.forEach(vk => {
         Plotly.relayout(`chart-${vk}`, {
@@ -849,6 +853,8 @@
 
     el.on('plotly_unhover', function() {
       S.hoveredMember = null;
+      const svg = el.querySelector('.main-svg');
+      if (svg) svg.style.cursor = '';
       CHART_ORDER.forEach(vk => {
         Plotly.relayout(`chart-${vk}`, { shapes: [] });
       });
