@@ -472,6 +472,7 @@
   //  Time select population
   // ═══════════════════════════════════════════════════════════════════
 
+  const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
   function formatTimeLabel(isoStr, firstIsoStr) {
@@ -479,7 +480,8 @@
     const first = new Date(firstIsoStr);
     const dayN  = Math.round((dt - first) / 86400000);
     const hh    = String(dt.getUTCHours()).padStart(2, '0');
-    return `D+${dayN}  ${dt.getUTCDate()} ${MONTHS[dt.getUTCMonth()]}  ${hh}Z`;
+    const dow   = DAYS[dt.getUTCDay()];
+    return `D+${dayN}  ${dow} ${dt.getUTCDate()} ${MONTHS[dt.getUTCMonth()]}  ${hh}Z`;
   }
 
   function populateTimeSelect() {
