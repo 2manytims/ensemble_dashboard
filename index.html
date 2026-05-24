@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EC Ensemble Dashboard – MetraWeather</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #0a1628; --bg2: #0d1f3c; --bg3: #111e35; --bg4: #142240;
+      --accent: #00aeef; --hot: #FF6B35; --cold: #4FC3F7; --focus: #FFD700;
+      --dim:    #1e3554; --text: #e8edf5; --text2: #8899aa;
+      --border: #1a2f4a; --radius: 8px; --font: 'Inter','Segoe UI',system-ui,sans-serif;
+    }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; min-height:100vh; }
+
+    /* Header */
+    .header { display:flex; align-items:center; justify-content:space-between; padding:10px 24px; background:var(--bg2); border-bottom:1px solid var(--border); gap:12px; }
+    .brand-name { font-size:15px; font-weight:700; color:#fff; letter-spacing:.5px; }
+    .brand-sub  { font-size:10px; color:var(--accent); text-transform:uppercase; letter-spacing:1.5px; }
+    .header-title { font-size:17px; font-weight:600; color:#fff; }
+    .run-badge { background:var(--bg4); border:1px solid var(--border); border-radius:6px; padding:4px 12px; font-size:12px; color:var(--text2); white-space:nowrap; }
+    .run-badge span { color:var(--accent); font-weight:600; }
+
+    /* Tabs */
+    .station-nav { display:flex; gap:4px; padding:10px 24px 0; background:var(--bg2); border-bottom:1px solid var(--border); }
+    .tab-btn { padding:7px 20px; border:none; background:transparent; color:var(--text2); font:inherit; font-size:13px; cursor:pointer; border-bottom:3px solid transparent; border-radius:6px 6px 0 0; transition:color .15s; }
+    .tab-btn:hover { color:var(--text); background:var(--bg4); }
+    .tab-btn.active { color:var(--accent); border-bottom-color:var(--accent); background:var(--bg3); }
+
+    /* Analysis panel */
+    .analysis-panel { display:flex; flex-direction:column; gap:8px; padding:12px 24px; background:var(--bg3); border-bottom:1px solid var(--border); }
+    .analysis-title { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text2); }
+    .analysis-controls { display:flex; align-items:center; flex-wrap:wrap; gap:10px; }
+    .ctrl-label { font-size:12px; color:var(--text2); white-space:nowrap; }
+    select { background:var(--bg4); color:var(--text); border:1px solid var(--border); border-radius:5px; padding:5px 8px; font:inherit; font-size:12px; cursor:pointer; }
+    select:focus { outline:none; border-color:var(--accent); }
+    .btn { padding:6px 14px; border:none; border-radius:5px; font:inherit; font-size:12px; cursor:pointer; font-weight:600; transition:opacity .15s; }
+    .btn:hover { opacity:.85; }
+    .btn-hot   { background:var(--hot);  color:#fff; }
+    .btn-cold  { background:var(--cold); color:#0a1628; }
+    .btn-clear { background:var(--bg4); color:var(--text2); border:1px solid var(--border); }
+    .ctrl-sep  { width:1px; height:24px; background:var(--border); margin:0 4px; }
+
+    /* Member bar */
+    .member-bar { display:flex; align-items:center; gap:6px; flex-wrap:wrap; min-height:24px; }
+    .member-bar-label { font-size:11px; color:var(--text2); }
+    .member-chip { padding:2px 8px; border-radius:12px; font-size:11px; font-weight:600; cursor:pointer; user-select:none; transition:opacity .15s,box-shadow .15s; }
+    .member-chip:hover { opacity:.75; }
+    .chip-hot  { background:rgba(255,107,53,.2); color:var(--hot);  border:1px solid rgba(255,107,53,.4); }
+    .chip-cold { background:rgba(79,195,247,.2); color:var(--cold); border:1px solid rgba(79,195,247,.4); }
+    .chip-inactive { opacity:.28; text-decoration:line-through; }
+    .chip-inactive:hover { opacity:.5; }
+    .chip-focused { box-shadow:0 0 0 2px var(--focus); }
+    .btn-t850 { padding:4px 12px; border:1px solid rgba(255,215,0,.4); border-radius:5px; background:rgba(255,215,0,.1); color:var(--focus); font:inherit; font-size:11px; font-weight:600; cursor:pointer; }
+    .btn-t850:hover { background:rgba(255,215,0,.2); }
+
+    /* Charts */
+    .charts-outer { padding:14px 20px 20px; display:flex; flex-direction:column; gap:12px; }
+    .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .charts-row.full { grid-template-columns:1fr; }
+    .chart-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; }
+    .chart-card-header { display:flex; align-items:center; justify-content:space-between; padding:8px 12px 5px; border-bottom:1px solid var(--border); }
+    .chart-card-title { font-size:12px; font-weight:600; }
+    .chart-unit { font-size:11px; color:var(--text2); }
+    .chart-legend { display:flex; align-items:center; gap:10px; }
+    .legend-item { display:flex; align-items:center; gap:4px; font-size:10px; color:var(--text2); }
+    .legend-swatch { width:14px; height:8px; border-radius:2px; }
+    .legend-line { width:16px; height:2px; border-radius:1px; }
+    .chart-div { width:100%; }
+
+    /* T850 modal */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:100; align-items:center; justify-content:center; padding:20px; }
+    .modal-overlay.visible { display:flex; }
+    .modal-box { background:var(--bg2); border:1px solid var(--border); border-radius:10px; width:100%; max-width:900px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; }
+    .modal-header { display:flex; align-items:flex-start; justify-content:space-between; padding:14px 18px; border-bottom:1px solid var(--border); }
+    .modal-title { font-size:14px; font-weight:600; color:var(--text); }
+    .modal-sub   { font-size:11px; color:var(--text2); margin-top:3px; }
+    .modal-close { background:var(--bg4); border:1px solid var(--border); color:var(--text2); border-radius:5px; padding:4px 10px; font-size:13px; cursor:pointer; }
+    .modal-close:hover { color:var(--text); }
+    .modal-body  { display:grid; grid-template-columns:1fr 220px; overflow:hidden; }
+    .modal-chart-wrap { padding:12px 12px 12px 16px; border-right:1px solid var(--border); }
+    .modal-side  { display:flex; flex-direction:column; overflow-y:auto; }
+    .t850-stats  { display:flex; flex-direction:column; gap:6px; padding:14px; border-bottom:1px solid var(--border); }
+    .t850-stats-title { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text2); margin-bottom:3px; }
+    .stat-row  { display:flex; justify-content:space-between; align-items:center; }
+    .stat-label { font-size:11px; color:var(--text2); }
+    .stat-val   { font-size:11px; font-weight:600; color:var(--text); }
+    .stat-hot   { color:var(--hot); }
+    .stat-cold  { color:var(--cold); }
+    .stat-gold  { color:var(--focus); }
+    .t850-context { padding:12px 14px; font-size:11px; color:var(--text2); line-height:1.6; }
+
+    /* Footer */
+    footer { display:flex; justify-content:space-between; padding:10px 24px; background:var(--bg2); border-top:1px solid var(--border); font-size:11px; color:var(--text2); }
+
+    /* Misc */
+    .loading { display:flex; align-items:center; justify-content:center; height:260px; color:var(--text2); font-size:14px; }
+    .error-box { margin:40px auto; max-width:600px; background:rgba(255,107,53,.1); border:1px solid rgba(255,107,53,.4); border-radius:var(--radius); padding:24px; }
+    .error-box h3 { color:var(--hot); margin-bottom:12px; }
+    .error-box code { background:var(--bg4); padding:2px 6px; border-radius:3px; font-size:12px; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div>
+      <div class="brand-name">MetraWeather</div>
+      <div class="brand-sub">Australian Consult Team</div>
+    </div>
+    <span class="header-title">EC Ensemble Dashboard</span>
+    <div class="run-badge">Run: <span id="run-label">…</span></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Season</span>
+      <select id="season-select" onchange="setSeason(this.value)">
+        <option value="summer">☀ Summer</option>
+        <option value="winter">❄ Winter</option>
+      </select>
+    </div>
+  </header>
+
+  <nav class="station-nav" id="station-nav"></nav>
+
+  <div class="analysis-panel">
+    <div class="analysis-title">Tail Scenario Analysis</div>
+    <div class="analysis-controls">
+      <span class="ctrl-label">Rank by</span>
+      <select id="rank-var">
+        <option value="tmax">Max Temperature</option>
+        <option value="tmin">Min Temperature</option>
+        <option value="apparent_temp">Apparent Temperature</option>
+        <option value="ff100">100m Wind Speed</option>
+        <option value="swrad6">Solar Radiation</option>
+        <option value="tcld">Cloud Cover</option>
+        <option value="td">Dew Point</option>
+      </select>
+      <span class="ctrl-label">at</span>
+      <select id="time-select" style="min-width:185px"></select>
+      <div class="ctrl-sep"></div>
+      <button class="btn btn-hot"   onclick="highlightTail('top')">▲ Hottest / Highest 10</button>
+      <button class="btn btn-cold"  onclick="highlightTail('bottom')">▼ Coldest / Lowest 10</button>
+      <button class="btn btn-clear" onclick="clearHighlight()">✕ Clear</button>
+    </div>
+    <div class="member-bar" id="member-bar">
+      <span class="member-bar-label" style="font-style:italic">Select a variable and time step above, then highlight the extreme members.</span>
+    </div>
+  </div>
+
+  <div class="charts-outer" id="charts-outer">
+    <div class="loading">Loading ensemble data…</div>
+  </div>
+
+  <!-- T850 Modal -->
+  <div class="modal-overlay" id="t850-overlay" onclick="closeT850()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">850 hPa Temperature — <span id="t850-member-label">–</span></div>
+          <div class="modal-sub">Synoptic proxy · focused member · <span id="t850-station-label">–</span></div>
+        </div>
+        <button class="modal-close" onclick="closeT850()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-chart-wrap"><div id="chart-t850"></div></div>
+        <div class="modal-side">
+          <div class="t850-stats"   id="t850-stats"></div>
+          <div class="t850-context" id="t850-context"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>MetraWeather Pty Ltd · Australian Consult Team</span>
+    <span id="footer-run">–</span>
+  </footer>
+
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js" charset="utf-8"></script>
+  <script>
+  // ═══ Config ═══════════════════════════════════════════════════════
+
+  const VARS = {
+    tmax:          { label:'Max Temperature',      unit:'°C',   color:'#e06c75' },
+    tmin:          { label:'Min Temperature',      unit:'°C',   color:'#4FC3F7' },
+    apparent_temp: { label:'Apparent Temperature', unit:'°C',   color:'#c678dd' },
+    td:            { label:'Dew Point',            unit:'°C',   color:'#56b6c2' },
+    ff100:         { label:'100m Wind Speed',      unit:'m/s',  color:'#61afef' },
+    swrad6:        { label:'Solar Radiation',      unit:'W/m²', color:'#e5c07b' },
+    tcld:          { label:'Cloud Cover',          unit:'%',    color:'#98c379' },
+  };
+
+  const LAYOUTS = {
+    summer: [ ['tmax','apparent_temp'], ['ff100','swrad6'], ['tcld'] ],
+    winter: [ ['tmin','ff100'],         ['swrad6','tcld']            ],
+  };
+
+  const T850_TEXT = {
+    summer: {
+      tmax:          "T850 is a proxy for the synoptic pattern driving this member's surface outcome. A warm T850 anomaly indicates a warm airmass aloft, consistent with a heat event scenario.",
+      apparent_temp: "T850 provides upper-level context for this member's apparent temperature. A warm, moist airmass aloft typically correlates with high dewpoint and reduced overnight cooling at the surface.",
+      ff100:         "T850 reflects the thermal gradient driving this member's wind scenario. Strong horizontal T850 gradients indicate a tight pressure pattern, consistent with elevated wind generation potential.",
+      swrad6:        "T850 alone is a weaker proxy for solar outcomes — cloud cover is more strongly driven by moisture and synoptic lifting than by temperature aloft. Use T850 as a broad indicator of airmass character.",
+      tcld:          "T850 alone is a weaker proxy for cloud cover. Use it as a broad indicator of airmass character rather than a direct cloud signal.",
+      td:            "T850 provides upper-level context for moisture. A warm moist airmass aloft often supports higher dewpoint at the surface, particularly ahead of troughs.",
+    },
+    winter: {
+      tmin:   "T850 is a strong proxy for overnight minimum temperatures. A cold T850 anomaly indicates a deep cold airmass aloft, consistent with elevated heating demand and potential frost risk.",
+      ff100:  "T850 reflects the thermal gradient driving this member's wind scenario. Strong horizontal T850 gradients indicate a tight pressure pattern, consistent with elevated wind generation potential.",
+      swrad6: "T850 alone is a weaker proxy for solar outcomes in winter — cloud cover is more strongly driven by frontal activity and moisture than by temperature aloft.",
+      tcld:   "T850 alone is a weaker proxy for cloud cover. Use it as a broad indicator of airmass character rather than a direct cloud signal.",
+    },
+  };
+
+  const FALLBACK_T850 = "T850 provides synoptic context for this member's scenario. Anomalies from the ensemble mean indicate how different this member's upper-level airmass is from the central forecast.";
+
+  const HOT   = '#FF6B35';
+  const COLD  = '#4FC3F7';
+  const GOLD  = '#FFD700';
+  const DIM   = '#1e3554';
+  const DAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MTHS  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  let CHART_ORDER = [];
+
+  // ═══ State ════════════════════════════════════════════════════════
+
+  const S = {
+    data: null, station: null, season: 'summer',
+    selectedMembers: [], activeMembers: [], rankedOrder: [],
+    highlightDir: 'top', focusedMember: null, hoveredMember: null,
+    savedRange: null,   // range saved on every user pan/zoom
+    isSyncing: false,
+  };
+
+  // ═══ Boot ══════════════════════════════════════════════════════════
+
+  async function init() {
+    try {
+      const res = await fetch('data/ensemble_data.json');
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      S.data = await res.json();
+    } catch(e) { showError(e); return; }
+
+    const stns = Object.keys(S.data.stations);
+    S.station  = stns[0];
+    document.getElementById('run-label').textContent  = S.data.meta.run_label;
+    document.getElementById('footer-run').textContent = 'Run: ' + S.data.meta.run_label;
+
+    const nav = document.getElementById('station-nav');
+    stns.forEach((s, i) => {
+      const b = document.createElement('button');
+      b.className   = 'tab-btn' + (i===0 ? ' active' : '');
+      b.textContent = s;
+      b.onclick = () => setStation(s);
+      nav.appendChild(b);
+    });
+
+    document.getElementById('rank-var').onchange = () => {
+      populateTimeSelect();
+      if (S.selectedMembers.length) highlightTail(S.highlightDir);
+    };
+
+    buildLayout();
+    populateTimeSelect();
+    renderAll();
+  }
+
+  // ═══ Layout ════════════════════════════════════════════════════════
+
+  function buildLayout() {
+    const outer = document.getElementById('charts-outer');
+    outer.innerHTML = '';
+    const rows = LAYOUTS[S.season];
+    CHART_ORDER.length = 0;
+    rows.forEach(row => row.forEach(vk => CHART_ORDER.push(vk)));
+
+    rows.forEach(row => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'charts-row' + (row.length===1 ? ' full' : '');
+      row.forEach(vk => {
+        const cfg  = VARS[vk];
+        const card = document.createElement('div');
+        card.className = 'chart-card';
+        card.innerHTML =
+          '<div class="chart-card-header">' +
+            '<span class="chart-card-title" style="color:' + cfg.color + '">' + cfg.label + '</span>' +
+            '<div style="display:flex;align-items:center;gap:12px">' +
+              '<div class="chart-legend">' +
+                '<div class="legend-item"><div class="legend-swatch" style="background:' + ha(cfg.color,.15) + '"></div><span>10–90th</span></div>' +
+                '<div class="legend-item"><div class="legend-swatch" style="background:' + ha(cfg.color,.38) + '"></div><span>25–75th</span></div>' +
+                '<div class="legend-item"><div class="legend-line" style="background:' + cfg.color + '"></div><span>Median</span></div>' +
+                '<div class="legend-item"><div class="legend-line" style="background:rgba(255,255,255,.55)"></div><span>Mean</span></div>' +
+              '</div>' +
+              '<span class="chart-unit">' + cfg.unit + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<div id="chart-' + vk + '" class="chart-div"></div>';
+        rowEl.appendChild(card);
+      });
+      outer.appendChild(rowEl);
+    });
+  }
+
+  // ═══ Station / Season ══════════════════════════════════════════════
+
+  function setStation(name) {
+    S.station = name;
+    resetState();
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.textContent===name));
+    populateTimeSelect();
+    renderAll();
+  }
+
+  function setSeason(season) {
+    S.season = season;
+    resetState();
+    buildLayout();
+    populateTimeSelect();
+    renderAll();
+  }
+
+  function resetState() {
+    S.selectedMembers=[]; S.activeMembers=[]; S.rankedOrder=[];
+    S.focusedMember=null; S.hoveredMember=null; S.savedRange=null;
+    updateMemberBar();
+    closeT850();
+  }
+
+  // ═══ Time select ══════════════════════════════════════════════════
+
+  function fmtTime(iso, first) {
+    const dt=new Date(iso), base=new Date(first);
+    const d=Math.round((dt-base)/86400000), hh=String(dt.getUTCHours()).padStart(2,'0');
+    return 'D+'+d+'  '+DAYS[dt.getUTCDay()]+' '+dt.getUTCDate()+' '+MTHS[dt.getUTCMonth()]+'  '+hh+'Z';
+  }
+
+  function populateTimeSelect() {
+    const vk=document.getElementById('rank-var').value;
+    const sel=document.getElementById('time-select');
+    const vd=S.data.stations[S.station]?.[vk];
+    const prev=sel.selectedIndex;
+    sel.innerHTML='';
+    if (!vd) return;
+    vd.times.forEach((t,i) => {
+      const o=document.createElement('option');
+      o.value=i; o.textContent=fmtTime(t,vd.times[0]);
+      sel.appendChild(o);
+    });
+    sel.selectedIndex=Math.min(prev>=0?prev:30, vd.times.length-1);
+  }
+
+  // ═══ Highlight ════════════════════════════════════════════════════
+
+  function highlightTail(dir) {
+    const vk=document.getElementById('rank-var').value;
+    const ti=parseInt(document.getElementById('time-select').value);
+    const vd=S.data.stations[S.station]?.[vk];
+    if (!vd) return;
+    const ranked=vd.members.map((s,i)=>({i,v:s[ti]??0})).sort((a,b)=>a.v-b.v);
+    S.highlightDir=dir; S.focusedMember=null; S.hoveredMember=null;
+    S.selectedMembers=dir==='top'?ranked.slice(-10).map(r=>r.i):ranked.slice(0,10).map(r=>r.i);
+    S.activeMembers=[...S.selectedMembers];
+    S.rankedOrder=dir==='top'?ranked.slice(-10).reverse().map(r=>r.i):ranked.slice(0,10).map(r=>r.i);
+    closeT850();
+    updateMemberBar();
+    renderAll();
+  }
+
+  function clearHighlight() { resetState(); renderAll(); }
+
+  // ═══ Member bar ═══════════════════════════════════════════════════
+
+  function updateMemberBar() {
+    const bar=document.getElementById('member-bar');
+    if (!S.selectedMembers.length) {
+      bar.innerHTML='<span class="member-bar-label" style="font-style:italic">Select a variable and time step above, then highlight the extreme members.</span>';
+      return;
+    }
+    const cls=S.highlightDir==='top'?'chip-hot':'chip-cold';
+    const lbl=S.highlightDir==='top'?'Highest 10':'Lowest 10';
+    const vl=VARS[document.getElementById('rank-var').value]?.label||'';
+    const ord=S.rankedOrder.length?S.rankedOrder:[...S.selectedMembers].sort((a,b)=>a-b);
+    bar.innerHTML=
+      '<span class="member-bar-label">'+lbl+' by '+vl+':</span>'+
+      ord.map(i=>{
+        const a=S.activeMembers.includes(i), f=S.focusedMember===i;
+        let c='member-chip '+cls; if(!a)c+=' chip-inactive'; if(f)c+=' chip-focused';
+        return '<span class="'+c+'" onclick="toggleChip('+i+')" title="'+(a?'Click to hide':'Click to show')+'">M'+(i+1)+'</span>';
+      }).join('')+
+      '<span class="member-bar-label" style="margin-left:6px;font-style:italic">· click chips to toggle · hover a line and click to focus</span>'+
+      (S.focusedMember!==null?'<button class="btn-t850" onclick="openT850()" style="margin-left:10px">◈ View 850 hPa Temp</button>':'');
+  }
+
+  function toggleChip(idx) {
+    const pos=S.activeMembers.indexOf(idx);
+    if (pos===-1) { S.activeMembers.push(idx); }
+    else { S.activeMembers.splice(pos,1); if(S.focusedMember===idx){S.focusedMember=null;closeT850();} }
+    updateMemberBar();
+    renderAll(S.savedRange);
+  }
+
+  // ═══ Render (3-phase, no race condition) ══════════════════════════
+
+  function plotCfg(isTall, hm) {
+    return {
+      paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'#0b1d38',
+      margin:{t:4,b:38,l:50,r:10}, height:isTall?250:195,
+      xaxis:{ type:'date', color:'#44607a', gridcolor:'#1e3a5a', gridwidth:1,
+              tickfont:{size:10,color:'#7a9ab8'}, tickformat:'%a %d',
+              tickangle:0, linecolor:'#1a2f4a' },
+      yaxis:{ color:'#44607a', gridcolor:'#122038', tickfont:{size:10,color:'#55708a'},
+              zeroline:false, linecolor:'#1a2f4a' },
+      hovermode: hm||'x unified',
+      hoverlabel:{ bgcolor:'#162944', bordercolor:'#2a4a70', font:{color:'#e8edf5',size:11} },
+      dragmode:'pan',
+    };
+  }
+
+  const PCFG = {responsive:true, displayModeBar:false, scrollZoom:true};
+
+  function renderAll(xrange) {
+    const sd  = S.data.stations[S.station];
+    const isHL = S.selectedMembers.length > 0;
+    const hm  = isHL ? 'closest' : 'x unified';
+
+    // ── Phase 1: React all charts (full range) ──────────────────────
+    CHART_ORDER.forEach(vk => {
+      const divId = 'chart-' + vk;
+      const vd    = sd?.[vk];
+      const cfg   = VARS[vk];
+      const isFull = LAYOUTS[S.season].some(r => r.length===1 && r[0]===vk);
+      const layout = plotCfg(!isFull, hm);
+      if (!vd || !vd.times.length) { Plotly.react(divId, [], layout, PCFG); return; }
+      const traces = isHL ? memberTraces(vd, cfg) : defaultTraces(vd, cfg);
+      Plotly.react(divId, traces, layout, PCFG);
+    });
+
+    // ── Phase 2: Restore zoom on all charts (suppressing sync) ──────
+    if (xrange) {
+      S.isSyncing = true;
+      CHART_ORDER.forEach(vk => {
+        Plotly.relayout('chart-' + vk, {'xaxis.range': xrange});
+      });
+      // Release sync lock after Plotly finishes
+      setTimeout(() => { S.isSyncing = false; }, 60);
+    }
+
+    // ── Phase 3: Attach listeners to all charts ─────────────────────
+    CHART_ORDER.forEach(vk => {
+      attachSync('chart-' + vk);
+      attachHover('chart-' + vk);
+      attachClick('chart-' + vk);
+    });
+  }
+
+  // ═══ Traces ═══════════════════════════════════════════════════════
+
+  function pct(arr, p) {
+    const n=arr.length, i=p/100*(n-1), lo=Math.floor(i), hi=Math.ceil(i);
+    return lo===hi?arr[lo]:arr[lo]+(arr[hi]-arr[lo])*(i-lo);
+  }
+
+  function pctSeries(members) {
+    const n=members[0].length, p10=[],p25=[],p50=[],p75=[],p90=[];
+    for (let t=0;t<n;t++) {
+      const v=members.map(m=>m[t]).sort((a,b)=>a-b);
+      p10.push(pct(v,10));p25.push(pct(v,25));p50.push(pct(v,50));
+      p75.push(pct(v,75));p90.push(pct(v,90));
+    }
+    return {p10,p25,p50,p75,p90};
+  }
+
+  function defaultTraces(vd, cfg) {
+    const {times,members,mean}=vd, rev=a=>[...a].reverse();
+    const {p10,p25,p50,p75,p90}=pctSeries(members);
+    return [
+      {x:[...times,...rev(times)],y:[...p90,...rev(p10)],fill:'toself',fillcolor:ha(cfg.color,.12),line:{width:0},showlegend:false,hoverinfo:'skip',type:'scatter'},
+      {x:[...times,...rev(times)],y:[...p75,...rev(p25)],fill:'toself',fillcolor:ha(cfg.color,.35),line:{width:0},showlegend:false,hoverinfo:'skip',type:'scatter'},
+      {x:times,y:p50,mode:'lines',type:'scatter',line:{color:cfg.color,width:2},hovertemplate:'%{y:.1f}<extra>Median</extra>',showlegend:false},
+      {x:times,y:mean,mode:'lines',type:'scatter',line:{color:'rgba(255,255,255,.55)',width:1.5,dash:'dot'},hovertemplate:'%{y:.1f}<extra>Mean</extra>',showlegend:false},
+    ];
+  }
+
+  function memberTraces(vd, cfg) {
+    const {times,members,mean}=vd, isHot=S.highlightDir==='top', traces=[];
+    for (let i=0;i<50;i++) {
+      const a=S.activeMembers.includes(i), f=S.focusedMember===i&&a;
+      let color,width,opacity,hi;
+      if (f)      {color=GOLD; width=3.5; opacity=1; hi=undefined;}
+      else if (a) {color=isHot?HOT:COLD; width=2; opacity=1; hi=undefined;}
+      else        {color=DIM;  width=0.7; opacity=0.5; hi='skip';}
+      traces.push({x:times,y:members[i],mode:'lines',type:'scatter',name:'M'+(i+1),
+        line:{color,width},opacity,showlegend:false,
+        hovertemplate:(a||f)?'%{y:.1f}<extra>M'+(i+1)+'</extra>':undefined, hoverinfo:hi});
+    }
+    traces.push({x:times,y:mean,mode:'lines',type:'scatter',
+      line:{color:'rgba(255,255,255,.7)',width:2,dash:'dash'},
+      hovertemplate:'%{y:.1f}<extra>Mean</extra>',showlegend:false});
+    return traces;
+  }
+
+  // ═══ Axis sync ════════════════════════════════════════════════════
+
+  let syncTimer = null;
+
+  function attachSync(divId) {
+    const el=document.getElementById(divId);
+    el.removeAllListeners&&el.removeAllListeners('plotly_relayout');
+    el.on('plotly_relayout', function(ed) {
+      if (S.isSyncing) return;
+      const r0=ed['xaxis.range[0]'], r1=ed['xaxis.range[1]'], auto=ed['xaxis.autorange'];
+      if (r0&&r1) S.savedRange=[r0,r1];
+      if (auto)   S.savedRange=null;
+      if (!r0&&!auto) return;
+      // Debounce: wait for scroll to settle before syncing other charts
+      clearTimeout(syncTimer);
+      syncTimer=setTimeout(()=>{
+        S.isSyncing=true;
+        CHART_ORDER.forEach(vk=>{
+          if('chart-'+vk===divId)return;
+          Plotly.relayout('chart-'+vk, auto?{'xaxis.autorange':true}:{'xaxis.range':[r0,r1]});
+        });
+        setTimeout(()=>{S.isSyncing=false;},30);
+      },50);
+    });
+  }
+
+  // ═══ Hover (crosshair + member tracking) ══════════════════════════
+
+  function attachHover(divId) {
+    const el=document.getElementById(divId);
+    el.removeAllListeners&&el.removeAllListeners('plotly_hover');
+    el.removeAllListeners&&el.removeAllListeners('plotly_unhover');
+
+    el.on('plotly_hover', function(ev) {
+      if (!ev||!ev.points||!ev.points.length) return;
+      const pt=ev.points[0], x=pt.x, cn=pt.curveNumber;
+      S.hoveredMember=(cn<50&&S.activeMembers.includes(cn))?cn:null;
+      const svg=el.querySelector('.main-svg');
+      if (svg) svg.style.cursor=S.hoveredMember!==null?'pointer':'';
+      if (S.isSyncing) return;  // skip crosshair during zoom sync
+      CHART_ORDER.forEach(vk=>Plotly.relayout('chart-'+vk,{shapes:[{
+        type:'line',xref:'x',yref:'paper',x0:x,x1:x,y0:0,y1:1,
+        line:{color:'rgba(255,255,255,.25)',width:1,dash:'dot'}
+      }]}));
+    });
+
+    el.on('plotly_unhover', function() {
+      S.hoveredMember=null;
+      const svg=el.querySelector('.main-svg');
+      if (svg) svg.style.cursor='';
+      CHART_ORDER.forEach(vk=>Plotly.relayout('chart-'+vk,{shapes:[]}));
+    });
+  }
+
+  // ═══ Member click ══════════════════════════════════════════════════
+  // mousedown fires BEFORE Plotly processes the event — capture here.
+  // click (mouseup) acts on the captured values.
+
+  function attachClick(divId) {
+    const el=document.getElementById(divId);
+    if (el._md) el.removeEventListener('mousedown',el._md);
+    if (el._mu) el.removeEventListener('click',el._mu);
+
+    let capMember=null, capRange=null;
+
+    el._md=function() {
+      capMember=null; capRange=null;
+      if (S.hoveredMember===null||!S.activeMembers.includes(S.hoveredMember)) return;
+      capMember=S.hoveredMember;
+      // Only restore range if user has explicitly panned/zoomed (S.savedRange populated)
+      // If null, render at full auto-range — which is exactly what the user sees
+      capRange=S.savedRange?S.savedRange.slice():null;
+    };
+
+    el._mu=function() {
+      if (capMember===null) return;
+      const m=capMember, r=capRange;
+      capMember=null; capRange=null;
+      if (!S.activeMembers.includes(m)) return;
+      S.focusedMember=S.focusedMember===m?null:m;
+      updateMemberBar();
+      renderAll(r);
+    };
+
+    el.addEventListener('mousedown',el._md);
+    el.addEventListener('click',el._mu);
+  }
+
+  // ═══ T850 Modal ═══════════════════════════════════════════════════
+
+  function openT850() {
+    const td=S.data.stations[S.station]?.t850;
+    if (!td||S.focusedMember===null) return;
+    const m=S.focusedMember, isHot=S.highlightDir==='top';
+    document.getElementById('t850-member-label').textContent='M'+(m+1);
+    document.getElementById('t850-station-label').textContent=S.station;
+    document.getElementById('t850-overlay').classList.add('visible');
+
+    const traces=[];
+    for (let i=0;i<50;i++) {
+      if (i===m||S.activeMembers.includes(i)) continue;
+      traces.push({x:td.times,y:td.members[i],mode:'lines',type:'scatter',line:{color:DIM,width:0.6},opacity:0.5,showlegend:false,hoverinfo:'skip'});
+    }
+    S.activeMembers.forEach(i=>{
+      if (i===m) return;
+      traces.push({x:td.times,y:td.members[i],mode:'lines',type:'scatter',line:{color:isHot?HOT:COLD,width:1.5},opacity:0.7,showlegend:false,hovertemplate:'%{y:.1f}<extra>M'+(i+1)+'</extra>'});
+    });
+    traces.push({x:td.times,y:td.members[m],mode:'lines',type:'scatter',line:{color:GOLD,width:2.5},showlegend:false,hovertemplate:'%{y:.1f}<extra>M'+(m+1)+'</extra>'});
+
+    Plotly.react('chart-t850', traces, {
+      paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'#0b1d38',
+      margin:{t:6,b:40,l:50,r:14}, height:320,
+      xaxis:{type:'date',color:'#44607a',gridcolor:'#1e3a5a',tickfont:{size:10,color:'#7a9ab8'},tickformat:'%a %d',linecolor:'#1a2f4a'},
+      yaxis:{color:'#44607a',gridcolor:'#122038',tickfont:{size:10,color:'#55708a'},zeroline:false,linecolor:'#1a2f4a',title:{text:'°C',font:{size:10,color:'#55708a'},standoff:4}},
+      hovermode:'closest', dragmode:'pan',
+      hoverlabel:{bgcolor:'#162944',bordercolor:'#2a4a70',font:{color:'#e8edf5',size:11}},
+    }, {responsive:true,displayModeBar:false,scrollZoom:true});
+
+    const vk=document.getElementById('rank-var').value;
+    const ti=parseInt(document.getElementById('time-select').value);
+    const rvd=S.data.stations[S.station]?.[vk];
+    const rt=rvd?.times?.[ti];
+    let ti850=0;
+    if (rt) { let best=Infinity; td.times.forEach((t,i)=>{const d=Math.abs(new Date(t)-new Date(rt));if(d<best){best=d;ti850=i;}}); }
+    const all=td.members.map(s=>s[ti850]);
+    const fv=td.members[m][ti850], mv=all.reduce((a,b)=>a+b,0)/50;
+    const an=fv-mv, rank=all.filter(v=>v<fv).length+1;
+    const tl=fmtTime(td.times[ti850],td.times[0]);
+    const ac=an>1?'stat-hot':an<-1?'stat-cold':'', rc=rank<=5?'stat-hot':rank>=46?'stat-cold':'';
+    document.getElementById('t850-stats').innerHTML=
+      '<div class="t850-stats-title">M'+(m+1)+' at '+tl+'</div>'+
+      '<div class="stat-row"><span class="stat-label">T850</span><span class="stat-val stat-gold">'+fv.toFixed(1)+'°C</span></div>'+
+      '<div class="stat-row"><span class="stat-label">Ensemble mean</span><span class="stat-val">'+mv.toFixed(1)+'°C</span></div>'+
+      '<div class="stat-row"><span class="stat-label">Anomaly</span><span class="stat-val '+ac+'">'+(an>=0?'+':'')+an.toFixed(1)+'°C</span></div>'+
+      '<div class="stat-row"><span class="stat-label">T850 rank (of 50)</span><span class="stat-val '+rc+'">'+rank+ord(rank)+' warmest</span></div>';
+    const bank=T850_TEXT[S.season]||T850_TEXT.summer;
+    document.getElementById('t850-context').textContent=bank[vk]||FALLBACK_T850;
+  }
+
+  function closeT850() { document.getElementById('t850-overlay').classList.remove('visible'); }
+
+  // ═══ Utilities ════════════════════════════════════════════════════
+
+  function ha(hex, a) {
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return 'rgba('+r+','+g+','+b+','+a+')';
+  }
+
+  function ord(n) { const s=['th','st','nd','rd'],v=n%100; return s[(v-20)%10]||s[v]||s[0]; }
+
+  function showError(e) {
+    document.getElementById('charts-outer').innerHTML=
+      '<div class="error-box"><h3>Could not load ensemble data</h3><p style="margin-bottom:12px">'+e+'</p>'+
+      '<p>Run <code>python wrangle.py</code> then ensure <code>data/ensemble_data.json</code> is committed.</p>'+
+      '<p style="margin-top:12px">To test locally: <code>python -m http.server 8000</code></p></div>';
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('keydown', e => { if (e.key==='Escape') closeT850(); });
+  </script>
+</body>
+</html>
