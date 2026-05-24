@@ -561,11 +561,9 @@
       capMember=null; capRange=null;
       if (S.hoveredMember===null||!S.activeMembers.includes(S.hoveredMember)) return;
       capMember=S.hoveredMember;
-      // Read range directly from layout at this exact moment
-      const fe=document.getElementById('chart-'+CHART_ORDER[0]);
-      capRange=S.savedRange?S.savedRange.slice()
-        :(fe&&fe._fullLayout&&fe._fullLayout.xaxis&&fe._fullLayout.xaxis.range
-          ?fe._fullLayout.xaxis.range.slice():null);
+      // Only restore range if user has explicitly panned/zoomed (S.savedRange populated)
+      // If null, render at full auto-range — which is exactly what the user sees
+      capRange=S.savedRange?S.savedRange.slice():null;
     };
 
     el._mu=function() {
