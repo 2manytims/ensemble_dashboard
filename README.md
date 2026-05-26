@@ -1,66 +1,98 @@
 # EC Ensemble Dashboard
-
 Interactive ensemble plume dashboard for the MetraWeather Australian Consult Team.
-
-Visualises ECMWF ensemble member forecasts for key NEM locations, with cross-variable member highlighting for tail scenario analysis.
+Visualises ECMWF ensemble member forecasts for key NEM locations, with cross-variable member highlighting and compound scenario probability analysis for tail risk assessment.
 
 ## What it does
 
 **Default view** – Each variable panel shows percentile spread bands (10–90th, 25–75th) and the ensemble mean/median.
 
-**Tail scenario analysis** – Select a variable, a forecast time step, and click *Hottest/Highest 10* or *Coldest/Lowest 10*. The 10 most extreme ensemble members are highlighted **across all charts simultaneously**, letting you see whether a hot temperature tail is also producing low wind, high solar, etc.
+**Tail scenario analysis** – Select a variable, a forecast time step, and click *Hottest/Highest 10* or *Coldest/Lowest 10*. The 10 most extreme ensemble members are highlighted **across all charts simultaneously**, letting you see whether a hot temperature tail is also producing low wind, reduced solar, etc.
 
-**Member focus** – In highlight mode, click any individual member line to isolate that single member across all charts.
+**Member focus** – In highlight mode, hover any member line to identify it, then click to isolate that single member across all charts.
+
+**Compound Scenarios** – Opens a probability table showing the percentage of ensemble members meeting configurable temperature, wind, and solar thresholds — individually and in combination. Designed around NEM-relevant risk events:
+- **Hot mode** – Hot/Very Hot Tmax combined with Low Wind and/or Low Solar. Triple compound (Hot + Low Wind + Low Solar) surfaces the full supply drought scenario.
+- **Cold mode** – Cold/Very Cold Tmin combined with Low Wind and/or Low Solar. Useful for winter morning demand risk assessment.
+- Mode follows the Season selector (Summer → Hot, Winter → Cold) with manual override available.
+- All thresholds are user-adjustable with a Recalculate button.
+- Opening Compound Scenarios clears any active member highlight; clicking Hottest/Coldest/Clear closes the panel.
+
+**Season selector** – Switches between Summer and Winter chart layouts, adjusting which variables are shown and in what arrangement. Also drives the default Compound Scenarios mode.
 
 **Axis sync** – Pan or zoom any chart; all others follow.
 
+---
+
 ## Variables
 
-| Variable | Source |
-|---|---|
-| Max Temperature | tmax |
-| 100m Wind Speed | ff100 (wind farm proxy) |
-| Solar Radiation | swrad6 converted to W/m² |
-| Cloud Cover | tcld (oktas → %) |
-| Dew Point | td |
+| Variable | Source | Unit | Notes |
+|---|---|---|---|
+| Max Temperature | tmax | °C | |
+| Min Temperature | tmin | °C | |
+| Apparent Temperature | derived | °C | BOM Steadman formula from tt, td, ff10 |
+| 100m Wind Speed | ff100 | kt | Wind farm generation proxy; m/s converted at render time |
+| Solar Radiation | swrad6 | W/m² | Converted from 6-hourly accumulated J/m² |
+| Cloud Cover | tcld | % | Normalised from oktas |
+| Dew Point | td | °C | |
+| 850 hPa Temperature | t850 | °C | |
+
+---
 
 ## Stations
-
 Brisbane (Archerfield), Sydney (Bankstown), Melbourne, Adelaide
 
 ---
 
 ## Setup
 
-### 1. Run the wrangler
+### 1. Save today's email attachments
+Save the two daily ECens zip files directly into the `Ens_dashboard` folder. They arrive by email around 9am and are named something like:
+```
+ECens Member Forecasts - Temperature _ 060484.zip
+ECens Member Forecasts _ 060486.zip
+```
+No renaming required.
 
+### 2. Run the wrangler
 ```bash
-python wrangle.py "path/to/csv/folder"
+python wrangle.py
 ```
-
-The script reads all `ECens_member_fcst_*.csv` files from the folder and writes `data/ensemble_data.json` into a `data/` subfolder.
-
-**Windows example:**
+With no arguments, the script defaults to:
 ```
-python wrangle.py "C:\Users\tconstable\OneDrive - MetService\Desktop\Projects\Ens_dashboard"
+C:\Users\tconstable\OneDrive - MetService\Desktop\Projects\Ens_dashboard
+```
+Or pass a path explicitly:
+```bash
+python wrangle.py "C:\path\to\Ens_dashboard"
 ```
 
 The wrangler automatically:
+- Finds today's zip files by modification date (warns and falls back if none found)
+- Extracts all ECens member forecast CSVs from the zips
 - Extracts only the four NEM stations
 - Converts `swrad6` from J/m² to W/m²
 - Converts `tcld` from oktas to percent
-- Falls back to Adelaide Kent Town if Adelaide wind data is missing
+- Derives apparent temperature from `tt`, `td`, and `ff10`
+- Falls back to Adelaide Kent Town if primary Adelaide station data is missing
+- **Deletes old zip files and any loose CSVs** from the folder after a successful write
 
-### 2. View the dashboard
+Output: `data/ensemble_data.json`
+
+### 3. Commit and push
+```bash
+git add data/ensemble_data.json
+git commit -m "Update ensemble data"
+git push
+```
+
+### 4. View the dashboard
 
 **Option A – GitHub Pages (recommended)**
-
 1. Push this repo to GitHub
 2. Go to Settings → Pages → Source: `main` branch, `/ (root)`
 3. Access at `https://your-username.github.io/repo-name/`
 
 **Option B – Local**
-
 Open a terminal in this folder and run:
 ```bash
 python -m http.server 8000
@@ -72,29 +104,37 @@ Then open `http://localhost:8000` in Chrome/Firefox.
 ---
 
 ## File structure
-
 ```
-├── index.html          # Dashboard (self-contained, no build step)
-├── wrangle.py          # CSV → JSON converter
+├── index.html               # Dashboard (self-contained, no build step)
+├── wrangle.py               # Zip → JSON converter
 ├── README.md
 └── data/
     └── ensemble_data.json   # Generated by wrangle.py, committed to repo for GitHub Pages
 ```
 
-## Updating data
+---
 
-Each day, after the new ensemble CSVs arrive:
+## Compound Scenarios — default thresholds
 
-1. Copy the new CSVs into the folder
-2. Run `python wrangle.py <folder>`
-3. Commit and push `data/ensemble_data.json`
+| Variable | Threshold | Label |
+|---|---|---|
+| Tmax | > 40°C | Very Hot |
+| Tmax | > 35°C | Hot |
+| Tmax | < 15°C | Cold (context, cold mode only) |
+| Tmin | < 5°C | Cold |
+| Tmin | < 2°C | Very Cold |
+| Wind (ff100) | < 15 kt | Low |
+| Solar (swrad6) | < 100 W/m² | Low |
+| Solar (swrad6) | > 320 W/m² | High |
+
+All thresholds are adjustable in the dashboard without rebuilding.
 
 ---
 
 ## Roadmap
-
 - [ ] Add wind farm location stations (Ararat VIC, Goulburn NSW) to CDS request
 - [ ] Add `tt` (3-hourly temperature) for full diurnal plume
-- [ ] Compound scenario probability table (hot + low wind %, etc.)
 - [ ] MSLP stamp plot integration for synoptic classification
 - [ ] Ensemble member scenario clustering
+- [ ] Automate daily data update and GitHub push (pending IT approval for internal hosting)
+- [ ] Cross-state compound scenario analysis (correlated hot + low wind events across multiple NEM regions)
