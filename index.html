@@ -868,13 +868,10 @@
     btn.classList.toggle('active', compoundOpen);
     if (compoundOpen) {
       // Clear any active member highlight when entering compound view
-      if (S.selectedMembers.length > 0) { resetState(); renderAll(); }
+      resetState();
+      renderAll();
       syncCompoundModeToSeason(true);
-      try { renderCompoundTable(); } catch(e) {
-        console.error('Compound table error:', e);
-        document.getElementById('compound-table-wrap').innerHTML =
-          `<div style="color:#e06c75;font-size:12px">Error rendering table — check console.</div>`;
-      }
+      renderCompoundTable();
     }
   }
 
@@ -987,8 +984,6 @@
       const dt      = new Date(t);
       const dateKey = dt.toISOString().slice(0, 10);
       const dateStr = DAYS[dt.getUTCDay()] + ' ' + dt.getUTCDate() + ' ' + MTHS[dt.getUTCMonth()];
-      const timeStr = String(dt.getUTCHours()).padStart(2,'0') + 'Z';
-      const dateLbl = `${dateStr}<br><span style="font-size:9px;color:var(--text2);opacity:.6;font-weight:400">${timeStr}</span>`;
 
       const txVals = tmaxD.members.map(m => m[ti]);
 
@@ -1050,7 +1045,7 @@
         if (isTnVC && isWL && isSL) vColdTri++;
       }
 
-      return { dateStr: dateLbl,
+      return { dateStr,
         wLow:cpct(wLow), sLow:cpct(sLow),
         hot:cpct(hot), vHot:cpct(vHot),
         tmaxCold:cpct(tmaxCold), tminCold:cpct(tminCold), tminVCold:cpct(tminVCold),
@@ -1147,7 +1142,7 @@
     // ── Rows ──
     rows.forEach(r => {
       h += '<tr>';
-      h += `<td class="date-col">${dateLbl}</td>`;
+      h += `<td class="date-col">${r.dateStr}</td>`;
 
       if (isHot) {
         h += pctCell(r.hot,     'hot',   true);
@@ -1217,20 +1212,13 @@
     btn.style.background = '#1a4a2a';
     btn.style.color = '#5dba7a';
     btn.style.borderColor = '#2a6a3a';
-    try {
-      renderCompoundTable();
-    } catch(e) {
-      console.error('Compound table error:', e);
-      document.getElementById('compound-table-wrap').innerHTML =
-        `<div style="color:#e06c75;font-size:12px">Error rendering table — check console.</div>`;
-    } finally {
-      setTimeout(() => {
-        btn.textContent = '↻ Recalculate';
-        btn.style.background = '';
-        btn.style.color = '';
-        btn.style.borderColor = '';
-      }, 1200);
-    }
+    renderCompoundTable();
+    setTimeout(() => {
+      btn.textContent = '↻ Recalculate';
+      btn.style.background = '';
+      btn.style.color = '';
+      btn.style.borderColor = '';
+    }, 1200);
   }
 
   function showError(e) {
