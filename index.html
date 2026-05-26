@@ -983,7 +983,9 @@
     const rows = tmaxD.times.map((t, ti) => {
       const dt      = new Date(t);
       const dateKey = dt.toISOString().slice(0, 10);
-      const dateStr = DAYS[dt.getUTCDay()] + ' ' + dt.getUTCDate() + ' ' + MTHS[dt.getUTCMonth()];
+      const dateStr = DAYS[dt.getUTCDay()] + ' ' + dt.getUTCDate() + ' ' + MTHS[dt.getUTCMonth()]
+                    + `<br><span style="font-size:9px;color:var(--text2);opacity:.55;font-weight:400">`
+                    + String(dt.getUTCHours()).padStart(2,'0') + `Z</span>`;
 
       const txVals = tmaxD.members.map(m => m[ti]);
 
