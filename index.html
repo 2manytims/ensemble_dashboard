@@ -131,6 +131,10 @@
     .th-sep { border-left:1px solid var(--border) !important; }
     .td-sep { border-left:1px solid rgba(26,47,74,.8) !important; }
     .compound-note { font-size:10px; color:var(--text2); margin-top:10px; line-height:1.5; }
+    .delta-pos { color:#e06c75; font-weight:600; }
+    .delta-neg { color:#98c379; font-weight:600; }
+    .delta-nil { color:var(--text2); opacity:.35; }
+    .th-delta  { color:var(--text2) !important; font-style:italic; font-size:9px !important; }
   </style>
 </head>
 <body>
@@ -313,7 +317,7 @@
     data: null, station: null, season: 'summer',
     selectedMembers: [], activeMembers: [], rankedOrder: [],
     highlightDir: 'top', focusedMember: null, hoveredMember: null,
-    isSyncing: false, _roseHighlight: -1,
+    isSyncing: false, _roseHighlight: -1, prevData: null,
   };
 
   // ═══ Boot ══════════════════════════════════════════════════════════
@@ -324,6 +328,12 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       S.data = await res.json();
     } catch(e) { showError(e); return; }
+
+    // Load previous run quietly — no error if missing
+    try {
+      const prevRes = await fetch('data/ensemble_data_prev.json');
+      if (prevRes.ok) S.prevData = await prevRes.json();
+    } catch(e) { S.prevData = null; }
 
     const stns = Object.keys(S.data.stations);
     S.station  = stns[0];
@@ -947,6 +957,16 @@
     return `<td class="${sep}" style="background:${bg};color:${col};font-weight:${fw}">${pct}%</td>`;
   }
 
+  function deltaCell(curr, prevObj, field, isSep) {
+    const sep = isSep ? ' td-sep' : '';
+    if (!prevObj) return `<td class="${sep} delta-nil">–</td>`;
+    const d = curr - (prevObj[field] ?? curr);
+    if (Math.abs(d) < 4) return `<td class="${sep} delta-nil">–</td>`;
+    const sign = d > 0 ? '+' : '';
+    const cls  = d > 0 ? 'delta-pos' : 'delta-neg';
+    return `<td class="${sep} ${cls}">${sign}${d}%</td>`;
+  }
+
   function renderCompoundTable() {
     const wrap = document.getElementById('compound-table-wrap');
     const note = document.getElementById('compound-note');
@@ -979,13 +999,69 @@
     const hasWind   = Object.keys(windByDay).length > 0;
     const hasSol    = Object.keys(solByDay).length > 0;
     const isHot     = compoundMode === 'hot';
+    const hasPrev   = !!S.prevData?.stations?.[S.station];
+
+    // ── Build prev-run compound lookup keyed by dateKey+timeKey ──────
+    const prevCpd = {};
+    if (hasPrev) {
+      const psd    = S.prevData.stations[S.station];
+      const ptmaxD = psd?.tmax;
+      const ptminD = psd?.tmin;
+      const pwindD = psd?.ff100;
+      const psolD  = psd?.swrad6;
+      const pwindByDay = buildDailyMeans(pwindD);
+      const psolByDay  = buildDailyMeans(psolD);
+
+      if (ptmaxD) {
+        ptmaxD.times.forEach((t, ti) => {
+          const dt      = new Date(t);
+          const dateKey = dt.toISOString().slice(0, 10);
+          const timeKey = String(dt.getUTCHours()).padStart(2,'0') + 'Z';
+          const key     = dateKey + '_' + timeKey;
+
+          const txVals = ptmaxD.members.map(m => m[ti]);
+          let tnVals = new Array(50).fill(null);
+          if (ptminD) {
+            const tIdx = ptminD.times.findIndex(tt => new Date(tt).toISOString().slice(0,10) === dateKey);
+            if (tIdx >= 0) tnVals = ptminD.members.map(m => m[tIdx]);
+          }
+          const wVals = pwindByDay[dateKey] || new Array(50).fill(null);
+          const sVals = psolByDay[dateKey]  || new Array(50).fill(null);
+
+          let hotWind=0,vHotWind=0,hotSol=0,vHotSol=0,hotTri=0,vHotTri=0;
+          let coldWind=0,vColdWind=0,coldSol=0,vColdSol=0,coldTri=0,vColdTri=0;
+          for (let i=0;i<50;i++) {
+            const tx=txVals[i],tn=tnVals[i],w=wVals[i],s=sVals[i];
+            const isH=tx!=null&&tx>THR.hot, isVH=tx!=null&&tx>THR.vhot;
+            const isTnC=tn!=null&&tn<THR.tminCold, isTnVC=tn!=null&&tn<THR.tminVCold;
+            const isWL=w!=null&&w*MS_TO_KT<THR.windLow, isSL=s!=null&&s<THR.solLow;
+            if(isH&&isWL)hotWind++; if(isVH&&isWL)vHotWind++;
+            if(isH&&isSL)hotSol++;  if(isVH&&isSL)vHotSol++;
+            if(isH&&isWL&&isSL)hotTri++; if(isVH&&isWL&&isSL)vHotTri++;
+            if(isTnC&&isWL)coldWind++; if(isTnVC&&isWL)vColdWind++;
+            if(isTnC&&isSL)coldSol++;  if(isTnVC&&isSL)vColdSol++;
+            if(isTnC&&isWL&&isSL)coldTri++; if(isTnVC&&isWL&&isSL)vColdTri++;
+          }
+          prevCpd[key] = {
+            hotWind:cpct(hotWind), vHotWind:cpct(vHotWind),
+            hotSol:cpct(hotSol),   vHotSol:cpct(vHotSol),
+            hotTri:cpct(hotTri),   vHotTri:cpct(vHotTri),
+            coldWind:cpct(coldWind), vColdWind:cpct(vColdWind),
+            coldSol:cpct(coldSol),   vColdSol:cpct(vColdSol),
+            coldTri:cpct(coldTri),   vColdTri:cpct(vColdTri),
+          };
+        });
+      }
+    }
 
     const rows = tmaxD.times.map((t, ti) => {
       const dt      = new Date(t);
       const dateKey = dt.toISOString().slice(0, 10);
+      const timeKey = String(dt.getUTCHours()).padStart(2,'0') + 'Z';
+      const prevKey = dateKey + '_' + timeKey;
       const dateStr = DAYS[dt.getUTCDay()] + ' ' + dt.getUTCDate() + ' ' + MTHS[dt.getUTCMonth()]
                     + ` <span style="font-size:9px;color:var(--text2);opacity:.55;font-weight:400">`
-                    + String(dt.getUTCHours()).padStart(2,'0') + `Z</span>`;
+                    + timeKey + `</span>`;
 
       const txVals = tmaxD.members.map(m => m[ti]);
 
@@ -1047,7 +1123,7 @@
         if (isTnVC && isWL && isSL) vColdTri++;
       }
 
-      return { dateStr,
+      return { dateStr, prev: prevCpd[prevKey] || null,
         wLow:cpct(wLow), sLow:cpct(sLow),
         hot:cpct(hot), vHot:cpct(vHot),
         tmaxCold:cpct(tmaxCold), tminCold:cpct(tminCold), tminVCold:cpct(tminVCold),
@@ -1064,11 +1140,10 @@
     let h = '<table class="compound-table"><thead>';
 
     if (isHot) {
-      // Span counts: Tmax(2) | Wind(2 if avail) | Solar(2 if avail) | Compound
       let cpdSpan = 0;
-      if (hasWind) cpdSpan += 2;
-      if (hasSol)  cpdSpan += 2;
-      if (hasWind && hasSol) cpdSpan += 2;
+      if (hasWind) cpdSpan += hasPrev ? 3 : 2;
+      if (hasSol)  cpdSpan += hasPrev ? 3 : 2;
+      if (hasWind && hasSol) cpdSpan += hasPrev ? 3 : 2;
 
       h += '<tr>';
       h += '<th class="date-col" rowspan="2">Date</th>';
@@ -1090,21 +1165,23 @@
       if (hasWind) {
         h += `<th class="th-sep" style="color:#ff6060">Hot+LowW</th>`;
         h += `<th style="color:#dd3030">VHot+LowW</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
       if (hasSol) {
         h += `<th class="th-sep" style="color:#cc8800">Hot+LowS</th>`;
         h += `<th style="color:#aa6600">VHot+LowS</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
       if (hasWind && hasSol) {
         h += `<th class="th-sep" style="color:#ff4040">Hot+W+S</th>`;
         h += `<th style="color:#cc2020">VHot+W+S</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
     } else {
-      // Cold mode
       let cpdSpan = 0;
-      if (hasWind) cpdSpan += 2;
-      if (hasSol)  cpdSpan += 2;
-      if (hasWind && hasSol) cpdSpan += 2;
+      if (hasWind) cpdSpan += hasPrev ? 3 : 2;
+      if (hasSol)  cpdSpan += hasPrev ? 3 : 2;
+      if (hasWind && hasSol) cpdSpan += hasPrev ? 3 : 2;
 
       h += '<tr>';
       h += '<th class="date-col" rowspan="2">Date</th>';
@@ -1128,14 +1205,17 @@
       if (hasWind) {
         h += `<th class="th-sep" style="color:#4FC3F7">ColdTn+LowW</th>`;
         h += `<th style="color:#3ab0e0">VColdTn+LowW</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
       if (hasSol) {
         h += `<th class="th-sep" style="color:#70c8e8">ColdTn+LowS</th>`;
         h += `<th style="color:#50a8c8">VColdTn+LowS</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
       if (hasWind && hasSol) {
         h += `<th class="th-sep" style="color:#4FC3F7">ColdTn+W+S</th>`;
         h += `<th style="color:#3ab0e0">VColdTn+W+S</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
     }
 
@@ -1147,8 +1227,8 @@
       h += `<td class="date-col">${r.dateStr}</td>`;
 
       if (isHot) {
-        h += pctCell(r.hot,     'hot',   true);
-        h += pctCell(r.vHot,    'vhot',  false);
+        h += pctCell(r.hot,  'hot',  true);
+        h += pctCell(r.vHot, 'vhot', false);
         if (hasWind) {
           h += pctCell(r.wLow, 'wlow', true);
           h += `<td style="color:var(--text2);opacity:.3">–</td>`;
@@ -1160,19 +1240,22 @@
         if (hasWind) {
           h += pctCell(r.hotWind,  'cpd-hh',  true);
           h += pctCell(r.vHotWind, 'cpd-vhh', false);
+          if (hasPrev) h += deltaCell(r.hotWind, r.prev, 'hotWind', false);
         }
         if (hasSol) {
-          h += pctCell(r.hotSol,   'cpd-hs',  true);
-          h += pctCell(r.vHotSol,  'cpd-vhs', false);
+          h += pctCell(r.hotSol,  'cpd-hs',  true);
+          h += pctCell(r.vHotSol, 'cpd-vhs', false);
+          if (hasPrev) h += deltaCell(r.hotSol, r.prev, 'hotSol', false);
         }
         if (hasWind && hasSol) {
-          h += pctCell(r.hotTri,   'cpd-tri',  true);
-          h += pctCell(r.vHotTri,  'cpd-tri',  false);
+          h += pctCell(r.hotTri,  'cpd-tri', true);
+          h += pctCell(r.vHotTri, 'cpd-tri', false);
+          if (hasPrev) h += deltaCell(r.hotTri, r.prev, 'hotTri', false);
         }
       } else {
-        h += pctCell(r.tminCold,  'cold',   true);
-        h += pctCell(r.tminVCold, 'cold',   false);
-        h += pctCell(r.tmaxCold,  'cold',   true);
+        h += pctCell(r.tminCold,  'cold', true);
+        h += pctCell(r.tminVCold, 'cold', false);
+        h += pctCell(r.tmaxCold,  'cold', true);
         if (hasWind) {
           h += pctCell(r.wLow, 'wlow', true);
           h += `<td style="color:var(--text2);opacity:.3">–</td>`;
@@ -1182,16 +1265,19 @@
           h += `<td style="color:var(--text2);opacity:.3">–</td>`;
         }
         if (hasWind) {
-          h += pctCell(r.coldWind,  'cpd-ch',   true);
-          h += pctCell(r.vColdWind, 'cpd-ch',   false);
+          h += pctCell(r.coldWind,  'cpd-ch', true);
+          h += pctCell(r.vColdWind, 'cpd-ch', false);
+          if (hasPrev) h += deltaCell(r.coldWind, r.prev, 'coldWind', false);
         }
         if (hasSol) {
-          h += pctCell(r.coldSol,   'cpd-cs',   true);
-          h += pctCell(r.vColdSol,  'cpd-cs',   false);
+          h += pctCell(r.coldSol,  'cpd-cs', true);
+          h += pctCell(r.vColdSol, 'cpd-cs', false);
+          if (hasPrev) h += deltaCell(r.coldSol, r.prev, 'coldSol', false);
         }
         if (hasWind && hasSol) {
-          h += pctCell(r.coldTri,   'cpd-ctri', true);
-          h += pctCell(r.vColdTri,  'cpd-ctri', false);
+          h += pctCell(r.coldTri,  'cpd-ctri', true);
+          h += pctCell(r.vColdTri, 'cpd-ctri', false);
+          if (hasPrev) h += deltaCell(r.coldTri, r.prev, 'coldTri', false);
         }
       }
 
@@ -1203,6 +1289,8 @@
 
     // Note
     const parts = ['Wind = ff100 daily mean (kt).', 'Solar = swrad6 daily mean (W/m²).', 'All % = share of 50 ensemble members.'];
+    if (hasPrev) parts.push('Δ = change vs previous run (shown when ≥4%).');
+    else parts.push('No previous run data — Δ columns will appear tomorrow.');
     if (isHot) parts.unshift('Hot mode: temperature columns use Tmax.');
     else       parts.unshift('Cold mode: Tmin drives demand signal; Tmax cold shown for context.');
     note.textContent = parts.join('  ·  ');
