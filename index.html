@@ -122,10 +122,11 @@
     .thr-input:focus { outline:none; border-color:var(--accent); }
     .compound-table-wrap { overflow:auto; max-height:70vh; }
     .compound-table { border-collapse:separate; border-spacing:0; font-size:11px; white-space:nowrap; }
-    .compound-table th { padding:4px 10px; text-align:center; font-size:10px; font-weight:600; letter-spacing:.4px; color:var(--text2); position:sticky; top:0; background:var(--bg3); z-index:2; box-shadow:0 1px 0 var(--border); }
+    .compound-table th { padding:4px 10px; text-align:center; font-size:10px; font-weight:600; letter-spacing:.4px; color:var(--text2); position:sticky; top:0; background:var(--bg3); z-index:2; }
     .compound-table th.date-col { text-align:left; min-width:110px; position:sticky; top:0; left:0; z-index:3; background:var(--bg3); }
-    .compound-table th.sub-row { top:28px; box-shadow:0 1px 0 var(--border); }
-    .compound-table th.sub-row.date-col { top:28px; left:0; z-index:3; }
+    .compound-table th.sub-row { top:29px; box-shadow:0 1px 0 var(--border); background:var(--bg3); }
+    .compound-table th.sub-row.date-col { top:29px; left:0; z-index:3; background:var(--bg3); }
+    .compound-table thead { position:sticky; top:0; z-index:4; background:var(--bg3); }
     .compound-table td { padding:4px 10px; text-align:center; border-bottom:1px solid rgba(26,47,74,.5); }
     .compound-table td.date-col { text-align:left; color:var(--text2); font-size:10px; padding-right:16px; position:sticky; left:0; background:var(--bg3); z-index:1; }
     .compound-table tr:last-child td { border-bottom:none; }
