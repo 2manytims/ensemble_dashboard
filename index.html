@@ -320,7 +320,7 @@
     data: null, station: null, season: 'summer',
     selectedMembers: [], activeMembers: [], rankedOrder: [],
     highlightDir: 'top', focusedMember: null, hoveredMember: null,
-    isSyncing: false, _roseHighlight: -1,
+    isSyncing: false, _roseHighlight: -1, prevData: null,
   };
 
   // ═══ Boot ══════════════════════════════════════════════════════════
@@ -331,6 +331,12 @@
       if (!res.ok) throw new Error('HTTP ' + res.status);
       S.data = await res.json();
     } catch(e) { showError(e); return; }
+
+    // Load previous run quietly — no error if missing
+    try {
+      const prevRes = await fetch('data/ensemble_data_prev.json');
+      if (prevRes.ok) S.prevData = await prevRes.json();
+    } catch(e) { S.prevData = null; }
 
     const stns = Object.keys(S.data.stations);
     S.station  = stns[0];
@@ -1008,13 +1014,65 @@
     const hasWind   = Object.keys(windByDay).length > 0;
     const hasSol    = Object.keys(solByDay).length > 0;
     const isHot     = compoundMode === 'hot';
+    const hasPrev   = !!S.prevData?.stations?.[S.station];
+
+    // ── Build prev-run compound lookup keyed by dateKey+timeKey ──────
+    const prevCpd = {};
+    if (hasPrev) {
+      const psd    = S.prevData.stations[S.station];
+      const ptmaxD = psd?.tmax;
+      const ptminD = psd?.tmin;
+      const pwindD = psd?.ff100;
+      const psolD  = psd?.swrad6;
+      const pwindByDay = buildDailyMeans(pwindD);
+      const psolByDay  = buildDailyMeans(psolD);
+      if (ptmaxD) {
+        ptmaxD.times.forEach((t, ti) => {
+          const dt      = new Date(t);
+          const dateKey = dt.toISOString().slice(0, 10);
+          const timeKey = String(dt.getUTCHours()).padStart(2,'0') + 'Z';
+          const key     = dateKey + '_' + timeKey;
+          const txVals  = ptmaxD.members.map(m => m[ti]);
+          let tnVals = new Array(50).fill(null);
+          if (ptminD) {
+            const tIdx = ptminD.times.findIndex(tt => new Date(tt).toISOString().slice(0,10) === dateKey);
+            if (tIdx >= 0) tnVals = ptminD.members.map(m => m[tIdx]);
+          }
+          const wVals = pwindByDay[dateKey] || new Array(50).fill(null);
+          const sVals = psolByDay[dateKey]  || new Array(50).fill(null);
+          let hotWind=0,vHotWind=0,hotSol=0,vHotSol=0,hotTri=0,vHotTri=0;
+          let coldWind=0,vColdWind=0,coldSol=0,vColdSol=0,coldTri=0,vColdTri=0;
+          for (let i=0;i<50;i++) {
+            const tx=txVals[i],tn=tnVals[i],w=wVals[i],s=sVals[i];
+            const isH=tx!=null&&tx>THR.hot,   isVH=tx!=null&&tx>THR.vhot;
+            const isTnC=tn!=null&&tn<THR.tminCold, isTnVC=tn!=null&&tn<THR.tminVCold;
+            const isWL=w!=null&&w*MS_TO_KT<THR.windLow, isSL=s!=null&&s<THR.solLow;
+            if(isH&&isWL)hotWind++;   if(isVH&&isWL)vHotWind++;
+            if(isH&&isSL)hotSol++;    if(isVH&&isSL)vHotSol++;
+            if(isH&&isWL&&isSL)hotTri++; if(isVH&&isWL&&isSL)vHotTri++;
+            if(isTnC&&isWL)coldWind++;  if(isTnVC&&isWL)vColdWind++;
+            if(isTnC&&isSL)coldSol++;   if(isTnVC&&isSL)vColdSol++;
+            if(isTnC&&isWL&&isSL)coldTri++; if(isTnVC&&isWL&&isSL)vColdTri++;
+          }
+          prevCpd[key] = {
+            hotWind:cpct(hotWind),   vHotWind:cpct(vHotWind),
+            hotSol:cpct(hotSol),     vHotSol:cpct(vHotSol),
+            hotTri:cpct(hotTri),     vHotTri:cpct(vHotTri),
+            coldWind:cpct(coldWind), vColdWind:cpct(vColdWind),
+            coldSol:cpct(coldSol),   vColdSol:cpct(vColdSol),
+            coldTri:cpct(coldTri),   vColdTri:cpct(vColdTri),
+          };
+        });
+      }
+    }
 
     const rows = tmaxD.times.map((t, ti) => {
       const dt      = new Date(t);
       const dateKey = dt.toISOString().slice(0, 10);
+      const timeKey = String(dt.getUTCHours()).padStart(2,'0') + 'Z';
+      const prevKey = dateKey + '_' + timeKey;
       const dateStr = DAYS[dt.getUTCDay()] + ' ' + dt.getUTCDate() + ' ' + MTHS[dt.getUTCMonth()]
-                    + ` <span style="font-size:9px;color:var(--text2);opacity:.55;font-weight:400">`
-                    + String(dt.getUTCHours()).padStart(2,'0') + `Z</span>`;
+                    + ` <span style="font-size:9px;color:var(--text2);opacity:.55;font-weight:400">${timeKey}</span>`;
 
       const txVals = tmaxD.members.map(m => m[ti]);
 
@@ -1076,7 +1134,7 @@
         if (isTnVC && isWL && isSL) vColdTri++;
       }
 
-      return { dateStr,
+      return { dateStr, prev: prevCpd[prevKey] || null,
         wLow:cpct(wLow), sLow:cpct(sLow),
         hot:cpct(hot), vHot:cpct(vHot),
         tmaxCold:cpct(tmaxCold), tminCold:cpct(tminCold), tminVCold:cpct(tminVCold),
