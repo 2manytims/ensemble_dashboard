@@ -1011,15 +1011,13 @@
       const psolD  = psd?.swrad6;
       const pwindByDay = buildDailyMeans(pwindD);
       const psolByDay  = buildDailyMeans(psolD);
-
       if (ptmaxD) {
         ptmaxD.times.forEach((t, ti) => {
           const dt      = new Date(t);
           const dateKey = dt.toISOString().slice(0, 10);
           const timeKey = String(dt.getUTCHours()).padStart(2,'0') + 'Z';
           const key     = dateKey + '_' + timeKey;
-
-          const txVals = ptmaxD.members.map(m => m[ti]);
+          const txVals  = ptmaxD.members.map(m => m[ti]);
           let tnVals = new Array(50).fill(null);
           if (ptminD) {
             const tIdx = ptminD.times.findIndex(tt => new Date(tt).toISOString().slice(0,10) === dateKey);
@@ -1027,7 +1025,6 @@
           }
           const wVals = pwindByDay[dateKey] || new Array(50).fill(null);
           const sVals = psolByDay[dateKey]  || new Array(50).fill(null);
-
           let hotWind=0,vHotWind=0,hotSol=0,vHotSol=0,hotTri=0,vHotTri=0;
           let coldWind=0,vColdWind=0,coldSol=0,vColdSol=0,coldTri=0,vColdTri=0;
           for (let i=0;i<50;i++) {
@@ -1035,17 +1032,17 @@
             const isH=tx!=null&&tx>THR.hot, isVH=tx!=null&&tx>THR.vhot;
             const isTnC=tn!=null&&tn<THR.tminCold, isTnVC=tn!=null&&tn<THR.tminVCold;
             const isWL=w!=null&&w*MS_TO_KT<THR.windLow, isSL=s!=null&&s<THR.solLow;
-            if(isH&&isWL)hotWind++; if(isVH&&isWL)vHotWind++;
-            if(isH&&isSL)hotSol++;  if(isVH&&isSL)vHotSol++;
+            if(isH&&isWL)hotWind++;   if(isVH&&isWL)vHotWind++;
+            if(isH&&isSL)hotSol++;    if(isVH&&isSL)vHotSol++;
             if(isH&&isWL&&isSL)hotTri++; if(isVH&&isWL&&isSL)vHotTri++;
-            if(isTnC&&isWL)coldWind++; if(isTnVC&&isWL)vColdWind++;
-            if(isTnC&&isSL)coldSol++;  if(isTnVC&&isSL)vColdSol++;
+            if(isTnC&&isWL)coldWind++;  if(isTnVC&&isWL)vColdWind++;
+            if(isTnC&&isSL)coldSol++;   if(isTnVC&&isSL)vColdSol++;
             if(isTnC&&isWL&&isSL)coldTri++; if(isTnVC&&isWL&&isSL)vColdTri++;
           }
           prevCpd[key] = {
-            hotWind:cpct(hotWind), vHotWind:cpct(vHotWind),
-            hotSol:cpct(hotSol),   vHotSol:cpct(vHotSol),
-            hotTri:cpct(hotTri),   vHotTri:cpct(vHotTri),
+            hotWind:cpct(hotWind),   vHotWind:cpct(vHotWind),
+            hotSol:cpct(hotSol),     vHotSol:cpct(vHotSol),
+            hotTri:cpct(hotTri),     vHotTri:cpct(vHotTri),
             coldWind:cpct(coldWind), vColdWind:cpct(vColdWind),
             coldSol:cpct(coldSol),   vColdSol:cpct(vColdSol),
             coldTri:cpct(coldTri),   vColdTri:cpct(vColdTri),
@@ -1060,8 +1057,7 @@
       const timeKey = String(dt.getUTCHours()).padStart(2,'0') + 'Z';
       const prevKey = dateKey + '_' + timeKey;
       const dateStr = DAYS[dt.getUTCDay()] + ' ' + dt.getUTCDate() + ' ' + MTHS[dt.getUTCMonth()]
-                    + ` <span style="font-size:9px;color:var(--text2);opacity:.55;font-weight:400">`
-                    + timeKey + `</span>`;
+                    + ` <span style="font-size:9px;color:var(--text2);opacity:.55;font-weight:400">${timeKey}</span>`;
 
       const txVals = tmaxD.members.map(m => m[ti]);
 
@@ -1138,12 +1134,13 @@
 
     // ── Build header ──
     let h = '<table class="compound-table"><thead>';
+    const dCols = hasPrev ? 2 : 0; // extra Δ columns per compound pair
 
     if (isHot) {
       let cpdSpan = 0;
-      if (hasWind) cpdSpan += hasPrev ? 3 : 2;
-      if (hasSol)  cpdSpan += hasPrev ? 3 : 2;
-      if (hasWind && hasSol) cpdSpan += hasPrev ? 3 : 2;
+      if (hasWind) cpdSpan += 2 + dCols;
+      if (hasSol)  cpdSpan += 2 + dCols;
+      if (hasWind && hasSol) cpdSpan += 2 + dCols;
 
       h += '<tr>';
       h += '<th class="date-col" rowspan="2">Date</th>';
@@ -1164,24 +1161,27 @@
       }
       if (hasWind) {
         h += `<th class="th-sep" style="color:#ff6060">Hot+LowW</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
         h += `<th style="color:#dd3030">VHot+LowW</th>`;
         if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
       if (hasSol) {
         h += `<th class="th-sep" style="color:#cc8800">Hot+LowS</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
         h += `<th style="color:#aa6600">VHot+LowS</th>`;
         if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
       if (hasWind && hasSol) {
         h += `<th class="th-sep" style="color:#ff4040">Hot+W+S</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
         h += `<th style="color:#cc2020">VHot+W+S</th>`;
         if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
     } else {
       let cpdSpan = 0;
-      if (hasWind) cpdSpan += hasPrev ? 3 : 2;
-      if (hasSol)  cpdSpan += hasPrev ? 3 : 2;
-      if (hasWind && hasSol) cpdSpan += hasPrev ? 3 : 2;
+      if (hasWind) cpdSpan += 2 + dCols;
+      if (hasSol)  cpdSpan += 2 + dCols;
+      if (hasWind && hasSol) cpdSpan += 2 + dCols;
 
       h += '<tr>';
       h += '<th class="date-col" rowspan="2">Date</th>';
@@ -1204,16 +1204,19 @@
       }
       if (hasWind) {
         h += `<th class="th-sep" style="color:#4FC3F7">ColdTn+LowW</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
         h += `<th style="color:#3ab0e0">VColdTn+LowW</th>`;
         if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
       if (hasSol) {
         h += `<th class="th-sep" style="color:#70c8e8">ColdTn+LowS</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
         h += `<th style="color:#50a8c8">VColdTn+LowS</th>`;
         if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
       if (hasWind && hasSol) {
         h += `<th class="th-sep" style="color:#4FC3F7">ColdTn+W+S</th>`;
+        if (hasPrev) h += `<th class="th-delta">Δ</th>`;
         h += `<th style="color:#3ab0e0">VColdTn+W+S</th>`;
         if (hasPrev) h += `<th class="th-delta">Δ</th>`;
       }
@@ -1239,18 +1242,21 @@
         }
         if (hasWind) {
           h += pctCell(r.hotWind,  'cpd-hh',  true);
+          if (hasPrev) h += deltaCell(r.hotWind,  r.prev, 'hotWind',  false);
           h += pctCell(r.vHotWind, 'cpd-vhh', false);
-          if (hasPrev) h += deltaCell(r.hotWind, r.prev, 'hotWind', false);
+          if (hasPrev) h += deltaCell(r.vHotWind, r.prev, 'vHotWind', false);
         }
         if (hasSol) {
           h += pctCell(r.hotSol,  'cpd-hs',  true);
+          if (hasPrev) h += deltaCell(r.hotSol,  r.prev, 'hotSol',  false);
           h += pctCell(r.vHotSol, 'cpd-vhs', false);
-          if (hasPrev) h += deltaCell(r.hotSol, r.prev, 'hotSol', false);
+          if (hasPrev) h += deltaCell(r.vHotSol, r.prev, 'vHotSol', false);
         }
         if (hasWind && hasSol) {
           h += pctCell(r.hotTri,  'cpd-tri', true);
+          if (hasPrev) h += deltaCell(r.hotTri,  r.prev, 'hotTri',  false);
           h += pctCell(r.vHotTri, 'cpd-tri', false);
-          if (hasPrev) h += deltaCell(r.hotTri, r.prev, 'hotTri', false);
+          if (hasPrev) h += deltaCell(r.vHotTri, r.prev, 'vHotTri', false);
         }
       } else {
         h += pctCell(r.tminCold,  'cold', true);
@@ -1266,18 +1272,21 @@
         }
         if (hasWind) {
           h += pctCell(r.coldWind,  'cpd-ch', true);
+          if (hasPrev) h += deltaCell(r.coldWind,  r.prev, 'coldWind',  false);
           h += pctCell(r.vColdWind, 'cpd-ch', false);
-          if (hasPrev) h += deltaCell(r.coldWind, r.prev, 'coldWind', false);
+          if (hasPrev) h += deltaCell(r.vColdWind, r.prev, 'vColdWind', false);
         }
         if (hasSol) {
           h += pctCell(r.coldSol,  'cpd-cs', true);
+          if (hasPrev) h += deltaCell(r.coldSol,  r.prev, 'coldSol',  false);
           h += pctCell(r.vColdSol, 'cpd-cs', false);
-          if (hasPrev) h += deltaCell(r.coldSol, r.prev, 'coldSol', false);
+          if (hasPrev) h += deltaCell(r.vColdSol, r.prev, 'vColdSol', false);
         }
         if (hasWind && hasSol) {
           h += pctCell(r.coldTri,  'cpd-ctri', true);
+          if (hasPrev) h += deltaCell(r.coldTri,  r.prev, 'coldTri',  false);
           h += pctCell(r.vColdTri, 'cpd-ctri', false);
-          if (hasPrev) h += deltaCell(r.coldTri, r.prev, 'coldTri', false);
+          if (hasPrev) h += deltaCell(r.vColdTri, r.prev, 'vColdTri', false);
         }
       }
 
@@ -1290,7 +1299,7 @@
     // Note
     const parts = ['Wind = ff100 daily mean (kt).', 'Solar = swrad6 daily mean (W/m²).', 'All % = share of 50 ensemble members.'];
     if (hasPrev) parts.push('Δ = change vs previous run (shown when ≥4%).');
-    else parts.push('No previous run data — Δ columns will appear tomorrow.');
+    else parts.push('No previous run data — Δ columns appear after tomorrow\'s wrangle.');
     if (isHot) parts.unshift('Hot mode: temperature columns use Tmax.');
     else       parts.unshift('Cold mode: Tmin drives demand signal; Tmax cold shown for context.');
     note.textContent = parts.join('  ·  ');
