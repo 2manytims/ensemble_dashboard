@@ -54,6 +54,8 @@
     .chip-focused { box-shadow:0 0 0 2px var(--focus); }
     .btn-t850 { padding:4px 12px; border:1px solid rgba(255,215,0,.4); border-radius:5px; background:rgba(255,215,0,.1); color:var(--focus); font:inherit; font-size:11px; font-weight:600; cursor:pointer; }
     .btn-t850:hover { background:rgba(255,215,0,.2); }
+    .btn-mslp { padding:4px 12px; border:1px solid rgba(0,174,239,.4); border-radius:5px; background:rgba(0,174,239,.1); color:var(--accent); font:inherit; font-size:11px; font-weight:600; cursor:pointer; }
+    .btn-mslp:hover { background:rgba(0,174,239,.2); }
 
     /* Charts */
     .charts-outer { padding:14px 20px 20px; display:flex; flex-direction:column; gap:12px; }
@@ -493,7 +495,9 @@
         return '<span class="'+c+'" onclick="toggleChip('+i+')" title="'+(a?'Click to hide':'Click to show')+'">M'+(i+1)+'</span>';
       }).join('')+
       '<span class="member-bar-label" style="margin-left:6px;font-style:italic">· click chips to toggle · hover a line and click to focus</span>'+
-      (S.focusedMember!==null?'<button class="btn-t850" onclick="openT850()" style="margin-left:10px">◈ View 850 hPa Temp</button>':'');
+      (S.focusedMember!==null?
+        '<button class="btn-t850" onclick="openT850()" style="margin-left:10px">◈ View 850 hPa Temp</button>'+
+        '<button class="btn-mslp" onclick="openMSLP()" style="margin-left:6px">⊕ MSLP on Meteologix</button>':'');
   }
 
   function toggleChip(idx) {
@@ -766,6 +770,22 @@
   }
 
   function closeT850() { document.getElementById('t850-overlay').classList.remove('visible'); }
+
+  function openMSLP() {
+    if (S.focusedMember === null) return;
+    const vk = document.getElementById('rank-var').value;
+    const ti = parseInt(document.getElementById('time-select').value);
+    const vd = S.data.stations[S.station]?.[vk];
+    if (!vd) return;
+    const dt = new Date(vd.times[ti]);
+    const yyyy = dt.getUTCFullYear();
+    const mm   = String(dt.getUTCMonth() + 1).padStart(2, '0');
+    const dd   = String(dt.getUTCDate()).padStart(2, '0');
+    const hh   = String(dt.getUTCHours()).padStart(2, '0');
+    const mn   = String(dt.getUTCMinutes()).padStart(2, '0');
+    const url  = `https://meteologix.com/au/model-charts/euro/australia/m${S.focusedMember + 1}_sea-level-pressure/${yyyy}${mm}${dd}-${hh}${mn}z.html`;
+    window.open(url, '_blank');
+  }
 
   // ═══ Wind Rose Strip ══════════════════════════════════════════════
 
